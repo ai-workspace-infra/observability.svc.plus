@@ -1,0 +1,78 @@
+---
+#==============================================================#
+# File      :   deepflow.yml
+# Desc      :   observability config for running DeepFlow stack
+# Ctime     :   2026-02-04
+# Mtime     :   2026-02-04
+# License   :   Apache-2.0 @ https://pigsty.io/docs/about/license/
+#==============================================================#
+
+# how to use this template:
+#
+#  curl -fsSL https://repo.pigsty.io/get | bash; cd ~/pigsty
+# ./bootstrap                  # prepare local repo & ansible
+# ./configure -c app/deepflow  # use this deepflow config template
+# vi pigsty.yml                # IMPORTANT: CHANGE CREDENTIALS / DOMAIN
+# ./deploy.yml                 # install infra stack
+# ./docker.yml                 # install docker & docker-compose
+# ./deepflow.yml               # install deepflow with deepflow_server role
+
+all:
+  children:
+
+    deepflow:
+      hosts: { 10.10.10.10: {} }
+      vars:
+        deepflow_enabled: true
+        deepflow_stack_dir: /opt/deepflow-server
+        deepflow_data: /data/deepflow
+
+        deepflow_server_grpc_port: 20035
+        deepflow_server_http_port: 20417
+        deepflow_app_port: 20880
+        deepflow_clickhouse_http_port: 18123
+        deepflow_clickhouse_tcp_port: 19000
+        deepflow_minio_api_port: 19090
+        deepflow_minio_console_port: 19091
+
+        deepflow_s3_bucket: deepflow
+        deepflow_s3_access_key: deepflow
+        deepflow_s3_secret_key: DeepFlow.S3.ChangeMe
+        deepflow_s3_region: us-east-1
+
+    infra: { hosts: { 10.10.10.10: { infra_seq: 1 } } }
+    etcd:  { hosts: { 10.10.10.10: { etcd_seq: 1 } }, vars: { etcd_cluster: etcd } }
+
+  vars:
+    version: v4.0.0
+    admin_ip: 10.10.10.10
+    region: default
+    node_tune: oltp
+    pg_conf: oltp.yml
+    docker_enabled: true
+
+    # Caddy gRPC ingress for deepflow-agent:
+    caddy_enabled: true
+    deepflow_grpc_enabled: true
+    deepflow_grpc_domain: deepflow-agent.pigsty
+    deepflow_grpc_upstream: 127.0.0.1:20035
+
+    infra_portal:
+      home     : { domain: i.pigsty }
+      deepflow : { domain: deepflow.pigsty ,endpoint: "10.10.10.10:20880" }
+
+    proxy_env:
+      no_proxy: "localhost,127.0.0.1,10.0.0.0/8,192.168.0.0/16,*.pigsty,*.aliyun.com,mirrors.*,*.tsinghua.edu.cn"
+
+    repo_enabled: false
+    node_repo_modules: node,infra,pgsql
+
+    grafana_admin_password: pigsty
+    grafana_view_password: DBUser.Viewer
+    pg_admin_password: DBUser.DBA
+    pg_monitor_password: DBUser.Monitor
+    pg_replication_password: DBUser.Replicator
+    patroni_password: Patroni.API
+    haproxy_admin_password: pigsty
+    minio_secret_key: S3User.MinIO
+    etcd_root_password: Etcd.Root
