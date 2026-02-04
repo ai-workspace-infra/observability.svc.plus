@@ -32,8 +32,6 @@
       loop:
         - "{{ deepflow_stack_dir }}"
         - "{{ deepflow_data }}"
-        - "{{ deepflow_data }}/clickhouse"
-        - "{{ deepflow_data }}/minio"
         - "{{ deepflow_data }}/server"
 
     - name: render deepflow environment

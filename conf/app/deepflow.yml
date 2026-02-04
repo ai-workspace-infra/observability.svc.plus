@@ -15,7 +15,7 @@
 # vi pigsty.yml                # IMPORTANT: CHANGE CREDENTIALS / DOMAIN
 # ./deploy.yml                 # install infra stack
 # ./docker.yml                 # install docker & docker-compose
-# ./deepflow.yml               # install deepflow with deepflow_server role
+# ./deepflow.yml               # install deepflow with three roles
 
 all:
   children:
@@ -24,21 +24,35 @@ all:
       hosts: { 10.10.10.10: {} }
       vars:
         deepflow_enabled: true
-        deepflow_stack_dir: /opt/deepflow-server
+        deepflow_mysql_enabled: true
+        deepflow_clickhouse_s3_enabled: true
+
         deepflow_data: /data/deepflow
 
-        deepflow_server_grpc_port: 20035
-        deepflow_server_http_port: 20417
-        deepflow_app_port: 20880
+        # role: deepflow_mysql
+        deepflow_mysql_port: 13306
+        deepflow_mysql_root_password: DeepFlow.Root.ChangeMe
+        deepflow_mysql_user: deepflow
+        deepflow_mysql_password: DeepFlow.MySQL.ChangeMe
+        deepflow_mysql_database: deepflow
+
+        # role: deepflow_clickhouse_s3
         deepflow_clickhouse_http_port: 18123
         deepflow_clickhouse_tcp_port: 19000
         deepflow_minio_api_port: 19090
         deepflow_minio_console_port: 19091
-
         deepflow_s3_bucket: deepflow
         deepflow_s3_access_key: deepflow
         deepflow_s3_secret_key: DeepFlow.S3.ChangeMe
         deepflow_s3_region: us-east-1
+
+        # role: deepflow_server
+        deepflow_server_grpc_port: 20035
+        deepflow_server_http_port: 20417
+        deepflow_app_port: 20880
+        deepflow_clickhouse_addr: host.docker.internal:19000
+        deepflow_s3_endpoint: http://host.docker.internal:19090
+        deepflow_mysql_addr: host.docker.internal:13306
 
     infra: { hosts: { 10.10.10.10: { infra_seq: 1 } } }
     etcd:  { hosts: { 10.10.10.10: { etcd_seq: 1 } }, vars: { etcd_cluster: etcd } }
