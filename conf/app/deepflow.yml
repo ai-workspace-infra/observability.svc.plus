@@ -72,7 +72,7 @@ all:
     deepflow_grpc_upstream: 127.0.0.1:20035
 
     infra_portal:
-      home     : { domain: i.pigsty }
+      home     : { domain: svc.plus }
       deepflow : { domain: deepflow.pigsty ,endpoint: "10.10.10.10:20880" }
 
     proxy_env:
