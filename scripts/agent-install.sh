@@ -169,7 +169,10 @@ version_from_bin() {
     local bin="$1"
     local regex="$2"
     if [[ ! -x "${bin}" ]]; then
-        return 1
+        # With `set -e`, a non-zero exit inside command substitution would abort the script.
+        # Missing binaries are expected on first install, so return empty + success.
+        echo ""
+        return 0
     fi
     "${bin}" --version 2>/dev/null | grep -Eo "${regex}" | head -n1 || true
 }
