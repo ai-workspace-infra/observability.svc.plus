@@ -150,3 +150,14 @@
 		file_server
 	}
 }
+
+{% if deepflow_grpc_enabled | default(false) %}
+{{ deepflow_grpc_domain | default('deepflow-agent.svc.plus') }} {
+	# TLS terminates at Caddy, then proxy h2c gRPC to deepflow-server.
+	reverse_proxy {{ deepflow_grpc_upstream | default('127.0.0.1:20035') }} {
+		transport http {
+			versions h2c
+		}
+	}
+}
+{% endif %}

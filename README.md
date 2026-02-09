@@ -54,6 +54,43 @@ curl -fsSL https://raw.githubusercontent.com/cloud-neutral-toolkit/observability
 >   - logs endpoint: `/ingest/logs/insert`
 > - The script automatically verifies installation after setup.
 
+### Optional: DeepFlow Agent on Client
+
+If you have deployed DeepFlow with `deepflow.yml`, you can install `deepflow-agent` on client nodes via the same script:
+
+```bash
+# example: endpoint exposed by caddy grpc ingress (deepflow_grpc_domain:443)
+curl -fsSL https://raw.githubusercontent.com/cloud-neutral-toolkit/observability.svc.plus/main/scripts/agent-install.sh \
+  | bash -s -- \
+    --endpoint https://observability.svc.plus/ingest/otlp \
+    --deepflow-agent \
+    --deepflow-grpc-endpoint deepflow-agent.svc.plus:443 \
+    --deepflow-agent-download-url https://example.com/path/to/deepflow-agent
+```
+
+> If `deepflow-agent` binary already exists on host, replace `--deepflow-agent-download-url` with `--deepflow-agent-bin /path/to/deepflow-agent`.
+
+## 🚀 DeepFlow Deployment (Server Side)
+
+This repo now provides dedicated DeepFlow roles:
+
+- `deepflow_mysql`
+- `deepflow_clickhouse_s3`
+- `deepflow_server`
+
+Quick start:
+
+```bash
+./configure -c app/deepflow
+vi pigsty.yml                  # adjust domain/password/ports
+./deploy.yml
+./docker.yml
+./deepflow.yml
+./infra.yml -t caddy           # apply deepflow_grpc_domain ingress
+```
+
+Default inventory template: `conf/app/deepflow.yml`
+
 ### Remote client example (clawdbot.svc.plus)
 
 ```bash

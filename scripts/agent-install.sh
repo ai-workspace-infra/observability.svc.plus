@@ -17,6 +17,11 @@ METRICS_ENDPOINT=""
 LOGS_ENDPOINT=""
 METRICS_ENDPOINT_SET=false
 LOGS_ENDPOINT_SET=false
+DEEPFLOW_AGENT_ENABLED=false
+DEEPFLOW_GRPC_ENDPOINT=""
+DEEPFLOW_AGENT_ENDPOINT_ARG="--grpc-server"
+DEEPFLOW_AGENT_DOWNLOAD_URL=""
+DEEPFLOW_AGENT_BIN="${BIN_DIR}/deepflow-agent"
 AUTO_YES=false
 
 GREEN='\033[0;32m'
@@ -46,6 +51,11 @@ Options:
   --endpoint URL      Base ingest endpoint (default: ${DEFAULT_ENDPOINT})
   --metrics-endpoint URL  Prometheus remote_write endpoint (optional override)
   --logs-endpoint URL     Loki push endpoint (optional override)
+  --deepflow-agent        Install and enable deepflow-agent service
+  --deepflow-grpc-endpoint HOST:PORT  DeepFlow gRPC endpoint (required if --deepflow-agent)
+  --deepflow-agent-endpoint-arg ARG   deepflow-agent endpoint arg (default: ${DEEPFLOW_AGENT_ENDPOINT_ARG})
+  --deepflow-agent-download-url URL   Download deepflow-agent binary to ${DEEPFLOW_AGENT_BIN}
+  --deepflow-agent-bin PATH           Use existing deepflow-agent binary path
   -y, --yes           Non-interactive mode
   -h, --help          Show help
 
@@ -101,6 +111,42 @@ while [[ $# -gt 0 ]]; do
             LOGS_ENDPOINT_SET=true
             shift
             ;;
+        --deepflow-agent)
+            DEEPFLOW_AGENT_ENABLED=true
+            shift
+            ;;
+        --deepflow-grpc-endpoint)
+            DEEPFLOW_GRPC_ENDPOINT="$2"
+            shift 2
+            ;;
+        --deepflow-grpc-endpoint=*)
+            DEEPFLOW_GRPC_ENDPOINT="${1#*=}"
+            shift
+            ;;
+        --deepflow-agent-endpoint-arg)
+            DEEPFLOW_AGENT_ENDPOINT_ARG="$2"
+            shift 2
+            ;;
+        --deepflow-agent-endpoint-arg=*)
+            DEEPFLOW_AGENT_ENDPOINT_ARG="${1#*=}"
+            shift
+            ;;
+        --deepflow-agent-download-url)
+            DEEPFLOW_AGENT_DOWNLOAD_URL="$2"
+            shift 2
+            ;;
+        --deepflow-agent-download-url=*)
+            DEEPFLOW_AGENT_DOWNLOAD_URL="${1#*=}"
+            shift
+            ;;
+        --deepflow-agent-bin)
+            DEEPFLOW_AGENT_BIN="$2"
+            shift 2
+            ;;
+        --deepflow-agent-bin=*)
+            DEEPFLOW_AGENT_BIN="${1#*=}"
+            shift
+            ;;
         -y|--yes)
             AUTO_YES=true
             shift
@@ -126,6 +172,9 @@ if [[ -z "${METRICS_ENDPOINT}" ]]; then
 fi
 if [[ -z "${LOGS_ENDPOINT}" ]]; then
     LOGS_ENDPOINT="${base_endpoint}/ingest/logs/insert"
+fi
+if [[ "${DEEPFLOW_AGENT_ENABLED}" == "true" && -z "${DEEPFLOW_GRPC_ENDPOINT}" ]]; then
+    DEEPFLOW_GRPC_ENDPOINT="deepflow-agent.${base_endpoint#*://}:443"
 fi
 
 # observability server should bypass external HTTPS ingress for local self-monitoring
@@ -382,17 +431,76 @@ WantedBy=multi-user.target"
     systemctl restart vector
 }
 
+install_deepflow_agent() {
+    if [[ "${DEEPFLOW_AGENT_ENABLED}" != "true" ]]; then
+        return 0
+    fi
+
+    if [[ -z "${DEEPFLOW_GRPC_ENDPOINT}" ]]; then
+        log_error "DeepFlow agent enabled but --deepflow-grpc-endpoint is empty."
+        exit 1
+    fi
+
+    if [[ -n "${DEEPFLOW_AGENT_DOWNLOAD_URL}" ]]; then
+        log_info "Downloading deepflow-agent binary..."
+        curl -fL --progress-bar "${DEEPFLOW_AGENT_DOWNLOAD_URL}" -o "${DEEPFLOW_AGENT_BIN}"
+        chmod 0755 "${DEEPFLOW_AGENT_BIN}"
+    elif [[ ! -x "${DEEPFLOW_AGENT_BIN}" ]]; then
+        if command -v deepflow-agent >/dev/null 2>&1; then
+            DEEPFLOW_AGENT_BIN="$(command -v deepflow-agent)"
+        else
+            log_error "deepflow-agent binary not found. Use --deepflow-agent-download-url or --deepflow-agent-bin."
+            exit 1
+        fi
+    fi
+
+    cat <<EOF > "${CONFIG_DIR}/deepflow-agent.env"
+DEEPFLOW_GRPC_ENDPOINT=${DEEPFLOW_GRPC_ENDPOINT}
+DEEPFLOW_AGENT_ENDPOINT_ARG=${DEEPFLOW_AGENT_ENDPOINT_ARG}
+EOF
+
+    cat <<'EOF' > "${BIN_DIR}/run-deepflow-agent.sh"
+#!/bin/bash
+set -euo pipefail
+: "${DEEPFLOW_AGENT_BIN:?missing DEEPFLOW_AGENT_BIN}"
+: "${DEEPFLOW_AGENT_ENDPOINT_ARG:?missing DEEPFLOW_AGENT_ENDPOINT_ARG}"
+: "${DEEPFLOW_GRPC_ENDPOINT:?missing DEEPFLOW_GRPC_ENDPOINT}"
+exec "${DEEPFLOW_AGENT_BIN}" "${DEEPFLOW_AGENT_ENDPOINT_ARG}" "${DEEPFLOW_GRPC_ENDPOINT}"
+EOF
+    chmod 0755 "${BIN_DIR}/run-deepflow-agent.sh"
+
+    write_unit_if_changed "deepflow_agent" "[Unit]
+Description=DeepFlow Agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=root
+EnvironmentFile=${CONFIG_DIR}/deepflow-agent.env
+Environment=DEEPFLOW_AGENT_BIN=${DEEPFLOW_AGENT_BIN}
+ExecStart=${BIN_DIR}/run-deepflow-agent.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target"
+
+    systemctl enable --now deepflow_agent
+    systemctl restart deepflow_agent
+}
+
 uninstall_agent() {
     confirm "This will uninstall observability agent components. Continue?" || {
         log_info "Cancelled."
         return 0
     }
 
-    for svc in vector process_exporter node_exporter; do
+    for svc in deepflow_agent vector process_exporter node_exporter; do
         systemctl disable --now "${svc}" >/dev/null 2>&1 || true
         rm -f "/etc/systemd/system/${svc}.service"
     done
     systemctl daemon-reload
+    rm -f "${BIN_DIR}/run-deepflow-agent.sh" "${CONFIG_DIR}/deepflow-agent.env"
     rm -rf "${INSTALL_DIR}"
     log_success "Agent components uninstalled."
 }
@@ -408,6 +516,14 @@ verify_installation() {
             systemctl status "${service}" --no-pager | head -n 20 || true
         fi
     done
+    if [[ "${DEEPFLOW_AGENT_ENABLED}" == "true" ]]; then
+        if systemctl is-active --quiet deepflow_agent; then
+            log_success "Service 'deepflow_agent' is running"
+        else
+            log_fail "Service 'deepflow_agent' is NOT running"
+            systemctl status deepflow_agent --no-pager | head -n 20 || true
+        fi
+    fi
 
     log_info "Checking ports..."
     for item in "9100 Node Exporter" "9256 Process Exporter"; do
@@ -435,9 +551,13 @@ deploy_agent() {
     log_info "Base endpoint=${ENDPOINT}"
     log_info "Metrics endpoint=${METRICS_ENDPOINT}"
     log_info "Logs endpoint=${LOGS_ENDPOINT}"
+    if [[ "${DEEPFLOW_AGENT_ENABLED}" == "true" ]]; then
+        log_info "DeepFlow endpoint=${DEEPFLOW_GRPC_ENDPOINT}"
+    fi
     install_node_exporter
     install_process_exporter
     install_vector
+    install_deepflow_agent
     verify_installation
     log_success "Agent deploy/upgrade complete."
     print_endpoint_summary

@@ -38,6 +38,10 @@ infra_extra_services: []          # extra services to be added on infra home pag
 # CADDY vs NGINX
 #-----------------------------------------------------------------
 caddy_enabled: true               # use caddy as ingress controller?
+# Optional DeepFlow agent ingress: TLS gRPC -> Caddy -> deepflow-server(h2c)
+deepflow_grpc_enabled: false      # expose dedicated gRPC ingress for deepflow-agent?
+deepflow_grpc_domain: deepflow-agent.svc.plus
+deepflow_grpc_upstream: 127.0.0.1:20035
 nginx_enabled: false              # enable nginx on this infra node?
 nginx_clean: false                # clean existing nginx config during init?
 nginx_exporter_enabled: true      # enable nginx_exporter on this infra node?
