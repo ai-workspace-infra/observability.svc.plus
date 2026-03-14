@@ -1,5 +1,28 @@
 ---
 #--------------------------------------------------------------#
+# 0. Validate optional ingest auth                          [auth]
+#--------------------------------------------------------------#
+- name: validate observability ingest basic auth inputs
+  tags: auth
+  when: observability_ingest_basic_auth_enabled | default(false) | bool
+  assert:
+    that:
+      - observability_ingest_basic_auth_user | default('', true) | length > 0
+      - observability_ingest_basic_auth_password | default('', true) | length > 0 or observability_ingest_basic_auth_password_hash | default('', true) | length > 0
+    fail_msg: "When observability_ingest_basic_auth_enabled=true, set observability_ingest_basic_auth_user and either observability_ingest_basic_auth_password or observability_ingest_basic_auth_password_hash."
+
+- name: build effective observability ingest password hash
+  tags: auth
+  when: observability_ingest_basic_auth_enabled | default(false) | bool
+  set_fact:
+    observability_ingest_basic_auth_password_hash_effective: >-
+      {{
+        observability_ingest_basic_auth_password_hash
+        if (observability_ingest_basic_auth_password_hash | default('', true) | length > 0)
+        else (observability_ingest_basic_auth_password | password_hash('bcrypt'))
+      }}
+
+#--------------------------------------------------------------#
 # 1. Infra User                                     [infra_user]
 #--------------------------------------------------------------#
 # create infra group and users before directory creation

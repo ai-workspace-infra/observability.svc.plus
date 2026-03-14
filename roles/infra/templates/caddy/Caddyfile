@@ -5,6 +5,13 @@
 {{ infra_domain | default('observability.svc.plus') }} {
 	encode gzip zstd
 
+{% if observability_ingest_basic_auth_enabled | default(false) %}
+	@observability_ingest path /ingest/*
+	basic_auth @observability_ingest {
+		{{ observability_ingest_basic_auth_user }} {{ observability_ingest_basic_auth_password_hash_effective | default(observability_ingest_basic_auth_password_hash) }}
+	}
+{% endif %}
+
         # ---- Alloy unified ingest endpoints ----
 
         # Prometheus remote_write

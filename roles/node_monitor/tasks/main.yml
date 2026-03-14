@@ -45,6 +45,24 @@
       loop: '{{ groups["infra"]|default([]) }}'
       systemd: name=nginx state=reloaded enabled=yes daemon_reload=yes
 
+- name: validate observability push mode inputs
+  tags: [monitor, vector, process_exporter]
+  when: node_monitor_mode | default('pull') == 'push'
+  assert:
+    that:
+      - observability_endpoint | default('', true) | length > 0 or (observability_metrics_endpoint | default('', true) | length > 0 and observability_logs_endpoint | default('', true) | length > 0)
+    fail_msg: "Set observability_endpoint, or set both observability_metrics_endpoint and observability_logs_endpoint, when node_monitor_mode=push."
+
+- name: validate observability push mode basic auth inputs
+  tags: [monitor, vector, process_exporter, auth]
+  when:
+    - node_monitor_mode | default('pull') == 'push'
+    - observability_ingest_basic_auth_enabled | default(false) | bool
+  assert:
+    that:
+      - observability_ingest_basic_auth_user | default('', true) | length > 0
+      - observability_ingest_basic_auth_password | default('', true) | length > 0
+    fail_msg: "When observability_ingest_basic_auth_enabled=true in push mode, set observability_ingest_basic_auth_user and observability_ingest_basic_auth_password."
 
 #--------------------------------------------------------------#
 # Register Instance DNS Name                           [vip_dns]
@@ -140,6 +158,7 @@
 # /infra/targets/node/{{ ip }}.yml
 - name: register node as victoria target
   tags: [ node_vip, node_register, register, add_metrics ]
+  when: node_monitor_mode | default('pull') != 'push'
   ignore_errors: true
   delegate_to: '{{ item }}'
   loop: '{{ groups["infra"]|default([]) }}'
@@ -168,6 +187,7 @@
 
 - name: register node as ping target
   tags: [ node_register, register, add_metrics ]
+  when: node_monitor_mode | default('pull') != 'push'
   ignore_errors: true
   delegate_to: '{{ item }}'
   loop: '{{ groups["infra"]|default([]) }}'
@@ -183,7 +203,7 @@
 
 - name: register node vip as ping target
   tags: [ node_vip, node_register, register, add_metrics ]
-  when: vip_enabled|bool and vip_address is defined and vip_address != ''
+  when: node_monitor_mode | default('pull') != 'push' and vip_enabled|bool and vip_address is defined and vip_address != ''
   ignore_errors: true
   delegate_to: '{{ item }}'
   loop: '{{ groups["infra"]|default([]) }}'
@@ -197,6 +217,9 @@
       - labels: { ip: {{ inventory_hostname }} , ins: {{ nodename }} , cls: {{ node_cluster|default('nodes') }}, vip: {{ vip_address }} , job: node-vip }
         targets: [ {{ vip_address }} ]
 
+- import_tasks: process_exporter.yml
+  tags: process_exporter
+  when: process_exporter_enabled | default(false) | bool or node_monitor_mode | default('pull') == 'push'
 
 #--------------------------------------------------------------#
 # Vector                                                [vector]

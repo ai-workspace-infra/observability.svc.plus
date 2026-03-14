@@ -103,4 +103,13 @@
 #     - add_logs       : register infra as vector logging source
 #     - add_ds         : register infra victoria stack as grafana datasource
 #--------------------------------------------------------------#
+# Mixed Existing-Host Deployment
+#--------------------------------------------------------------#
+# Center service example:
+#   ./infra.yml -l us-xhttp.svc.plus \
+#     -e infra_domain=observability.svc.plus \
+#     -e 'infra_portal={\"home\":{\"domain\":\"observability.svc.plus\"}}' \
+#     -e caddy_enabled=true \
+#     -e nginx_enabled=false
+#--------------------------------------------------------------#
 ...

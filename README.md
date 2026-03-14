@@ -31,6 +31,70 @@ flowchart LR
 
 ## 3) Start
 
+当前推荐按“混合部署到已有主机”的方式执行。
+
+1. 先更新 DNS，把 `observability.svc.plus` 指到 `us-xhttp.svc.plus`
+2. 在 `us-xhttp.svc.plus` 上执行下面的 Server side 示例，部署中心端
+3. 再到其他已有主机执行下面的 Client side 示例，把采集数据回传到 `observability.svc.plus`
+
+当前接入主机：
+
+- `us-xhttp.svc.plus`：继续承载现有服务，同时承载 `observability.svc.plus`
+- `clawdbot.svc.plus`：部署 agent，采集后上报到中心端
+- `jp-xhttp.svc.plus`：部署 agent，采集后上报到中心端
+
+### Ansible (Recommended)
+
+#### Server side
+
+先导出 Cloudflare Token，然后在 `us-xhttp.svc.plus` 上执行服务端部署。`deploy_observability_service.yml` 会先把 Cloudflare 上的 `observability.svc.plus` 更新成指向 `us-xhttp.svc.plus` 的非代理记录，再等待公共 DNS 生效后继续部署，这样更容易保证 Caddy 首次自动签名成功。
+
+```bash
+export CLOUDFLARE_API_TOKEN=...
+ansible-playbook -i <your-inventory> deploy_observability_service.yml -l us-xhttp.svc.plus
+```
+
+如果希望给 `/ingest/*` 增加一层基础认证，可以在服务端部署时一起打开：
+
+```bash
+export CLOUDFLARE_API_TOKEN=...
+ansible-playbook -i <your-inventory> deploy_observability_service.yml -l us-xhttp.svc.plus \
+  -e observability_ingest_basic_auth_enabled=true \
+  -e observability_ingest_basic_auth_user=ingest \
+  -e observability_ingest_basic_auth_password='<strong-password>'
+```
+
+#### Client side (agent)
+
+再到采集端主机执行 `node.yml` 的 push mode：
+
+```bash
+ansible-playbook -i <your-inventory> node.yml \
+  -l clawdbot.svc.plus,jp-xhttp.svc.plus \
+  -e node_monitor_mode=push \
+  -e observability_endpoint=https://observability.svc.plus/ingest/otlp \
+  -e haproxy_enabled=false
+```
+
+如果服务端已开启 ingest 基本认证，采集端也要带上同一组凭据：
+
+```bash
+ansible-playbook -i <your-inventory> node.yml \
+  -l clawdbot.svc.plus,jp-xhttp.svc.plus \
+  -e node_monitor_mode=push \
+  -e observability_endpoint=https://observability.svc.plus/ingest/otlp \
+  -e observability_ingest_basic_auth_enabled=true \
+  -e observability_ingest_basic_auth_user=ingest \
+  -e observability_ingest_basic_auth_password='<strong-password>' \
+  -e haproxy_enabled=false
+```
+
+> `node_monitor_mode=push` 会在远端主机上部署 `node_exporter + process_exporter + vector`，并把 metrics / logs 主动汇总到 `observability.svc.plus`。
+>
+> `observability_ingest_basic_auth_*` 只保护 `/ingest/*` 写入入口，不影响 Caddy 暴露的其他站点页面；服务端和采集端必须使用同一组认证信息。
+
+### Script Installers
+
 ### Server side
 
 ```bash
@@ -95,6 +159,14 @@ Default inventory template: `conf/app/deepflow.yml`
 
 ```bash
 ssh root@clawdbot.svc.plus \
+  'curl -fsSL https://raw.githubusercontent.com/cloud-neutral-toolkit/observability.svc.plus/main/scripts/agent-install.sh \
+    | bash -s -- --endpoint https://observability.svc.plus/ingest/otlp'
+```
+
+### Remote client example (jp-xhttp.svc.plus)
+
+```bash
+ssh root@jp-xhttp.svc.plus \
   'curl -fsSL https://raw.githubusercontent.com/cloud-neutral-toolkit/observability.svc.plus/main/scripts/agent-install.sh \
     | bash -s -- --endpoint https://observability.svc.plus/ingest/otlp'
 ```

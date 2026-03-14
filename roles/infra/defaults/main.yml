@@ -15,6 +15,10 @@ proxy_env: { no_proxy: "localhost,127.0.0.1,10.0.0.0/8,192.168.0.0/16,*.aliyun.c
 infra_portal:                     # infra services exposed via portal
   home : { domain: i.observability }     # default home server definition
 infra_domain: observability.svc.plus
+observability_ingest_basic_auth_enabled: false
+observability_ingest_basic_auth_user: ingest
+observability_ingest_basic_auth_password: ''
+observability_ingest_basic_auth_password_hash: ''
 infra_data: /data/infra           # default data path for infrastructure data
 infra_services:                   # home page navigation entries
   - { name: Metrics            ,url: '/vmetrics/vmui/'         ,desc: 'VictoriaMetrics Query UI'    ,icon: 'metrics'  ,name_cn: '指标查询' ,desc_cn: 'VictoriaMetrics 指标查询界面' }

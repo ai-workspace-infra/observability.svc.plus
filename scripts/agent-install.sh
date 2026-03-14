@@ -36,6 +36,102 @@ log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 log_fail() { echo -e "${RED}[FAIL]${NC} $1"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 
+append_unique() {
+    local value="$1"
+    local -n target_ref="$2"
+    [[ -z "${value}" ]] && return 0
+    local existing
+    for existing in "${target_ref[@]:-}"; do
+        if [[ "${existing}" == "${value}" ]]; then
+            return 0
+        fi
+    done
+    target_ref+=("${value}")
+}
+
+collect_local_ipv4s() {
+    local ips=()
+    local ip
+
+    if command -v hostname >/dev/null 2>&1; then
+        for ip in $(hostname -I 2>/dev/null || true); do
+            append_unique "${ip}" ips
+        done
+    fi
+
+    if command -v ip >/dev/null 2>&1; then
+        while read -r ip; do
+            append_unique "${ip}" ips
+        done < <(ip -o -4 addr show scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1)
+    fi
+
+    printf '%s\n' "${ips[@]}"
+}
+
+resolve_ipv4s() {
+    local host="$1"
+    local ips=()
+    local ip
+
+    if command -v getent >/dev/null 2>&1; then
+        while read -r ip _; do
+            append_unique "${ip}" ips
+        done < <(getent ahostsv4 "${host}" 2>/dev/null || true)
+    fi
+
+    if [[ ${#ips[@]} -eq 0 ]] && command -v host >/dev/null 2>&1; then
+        while read -r ip; do
+            append_unique "${ip}" ips
+        done < <(host "${host}" 2>/dev/null | awk '/has address/ {print $4}')
+    fi
+
+    printf '%s\n' "${ips[@]}"
+}
+
+extract_host_from_url() {
+    local url="$1"
+    url="${url#*://}"
+    url="${url%%/*}"
+    url="${url%%:*}"
+    printf '%s\n' "${url}"
+}
+
+endpoint_targets_local_host() {
+    local host="$1"
+    local local_host
+    local local_short
+    local local_ip
+    local resolved_ip
+    local local_ips=()
+    local resolved_ips=()
+
+    local_host="$(hostname -f 2>/dev/null || hostname)"
+    local_short="${local_host%%.*}"
+    if [[ "${host}" == "${local_host}" || "${host}" == "${local_short}" ]]; then
+        return 0
+    fi
+
+    while read -r local_ip; do
+        append_unique "${local_ip}" local_ips
+    done < <(collect_local_ipv4s)
+
+    while read -r resolved_ip; do
+        append_unique "${resolved_ip}" resolved_ips
+    done < <(resolve_ipv4s "${host}")
+
+    [[ ${#local_ips[@]} -eq 0 || ${#resolved_ips[@]} -eq 0 ]] && return 1
+
+    for resolved_ip in "${resolved_ips[@]}"; do
+        for local_ip in "${local_ips[@]}"; do
+            if [[ "${resolved_ip}" == "${local_ip}" ]]; then
+                return 0
+            fi
+        done
+    done
+
+    return 1
+}
+
 usage() {
     cat <<EOF
 Usage:
@@ -177,10 +273,9 @@ if [[ "${DEEPFLOW_AGENT_ENABLED}" == "true" && -z "${DEEPFLOW_GRPC_ENDPOINT}" ]]
     DEEPFLOW_GRPC_ENDPOINT="deepflow-agent.${base_endpoint#*://}:443"
 fi
 
-# observability server should bypass external HTTPS ingress for local self-monitoring
-local_host="$(hostname -f 2>/dev/null || hostname)"
-local_short="${local_host%%.*}"
-if [[ "${local_host}" == "observability.svc.plus" || "${local_short}" == "observability" ]]; then
+collector_host="$(extract_host_from_url "${base_endpoint}")"
+if endpoint_targets_local_host "${collector_host}"; then
+    log_info "Collector endpoint resolves to this host; using local ingest ports for self-monitoring."
     if [[ "${METRICS_ENDPOINT_SET}" == "false" ]]; then
         METRICS_ENDPOINT="http://127.0.0.1:8428/api/v1/write"
     fi
