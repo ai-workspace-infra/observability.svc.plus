@@ -107,7 +107,7 @@ proxy_env:                        # global proxy env when downloading packages
 #-----------------------------------------------------------------
 # NGINX (Reference)
 #-----------------------------------------------------------------
-nginx_enabled: true               # enable nginx on this infra node?
+nginx_enabled: false              # enable nginx on this infra node?
 nginx_home: /www                  # nginx content dir, `/www` by default (soft link to nginx_data)
 nginx_data: /data/nginx           # nginx actual data dir, /data/nginx by default
 #-----------------------------------------------------------------

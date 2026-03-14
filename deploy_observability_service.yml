@@ -118,11 +118,19 @@
       register: observability_dns_public
       until:
         - observability_dns_public.status == 200
-        - observability_dns_public.json.Status == 0
         - >
-          (observability_dns_public.json.Answer | default([])
-          | selectattr('data', 'equalto', observability_dns_target ~ '.')
-          | list | length) > 0
+          (
+            observability_dns_public.json.Status
+            if (observability_dns_public.json is defined)
+            else ((observability_dns_public.content | from_json).Status | default(1))
+          ) == 0
+        - >
+          (
+            observability_dns_public.json.Answer
+            if (observability_dns_public.json is defined)
+            else ((observability_dns_public.content | from_json).Answer | default([]))
+          ) | selectattr('data', 'equalto', observability_dns_target ~ '.')
+            | list | length > 0
       retries: "{{ dns_wait_retries }}"
       delay: "{{ dns_wait_delay }}"
 
