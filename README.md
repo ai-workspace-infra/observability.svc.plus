@@ -72,8 +72,7 @@ ansible-playbook -i <your-inventory> deploy_observability_service.yml -l us-xhtt
 ansible-playbook -i <your-inventory> node.yml \
   -l openclaw.svc.plus,jp-xhttp.svc.plus \
   -e node_monitor_mode=push \
-  -e observability_endpoint=https://observability.svc.plus/ \
-  -e haproxy_enabled=false
+  -e observability_endpoint=https://observability.svc.plus/
 ```
 
 如果服务端已开启 ingest 基本认证，采集端也要带上同一组凭据：
@@ -85,8 +84,7 @@ ansible-playbook -i <your-inventory> node.yml \
   -e observability_endpoint=https://observability.svc.plus/ \
   -e observability_ingest_basic_auth_enabled=true \
   -e observability_ingest_basic_auth_user=ingest \
-  -e observability_ingest_basic_auth_password='<strong-password>' \
-  -e haproxy_enabled=false
+  -e observability_ingest_basic_auth_password='<strong-password>'
 ```
 
 > `node_monitor_mode=push` 会在远端主机上部署 `node_exporter + process_exporter + vector`，并把 metrics / logs 主动汇总到 `observability.svc.plus`。`vector` 固定归到采集端任务，服务端 `infra.yml` 不再默认部署它。
