@@ -8,12 +8,29 @@ node_exporter_options: '--no-collector.softnet --no-collector.nvme --collector.t
 #--------------------------------------------------------------#
 # VECTOR
 #--------------------------------------------------------------#
-vector_enabled: true              # enable vector log collector?
+node_monitor_mode: pull          # pull: central scrape/register, push: remote agent pushes to observability endpoint
+observability_endpoint: ''       # base endpoint, e.g. https://observability.svc.plus/ingest/otlp
+observability_metrics_endpoint: ''  # optional override for remote_write endpoint
+observability_logs_endpoint: ''     # optional override for logs endpoint
+observability_ingest_basic_auth_enabled: false
+observability_ingest_basic_auth_user: ingest
+observability_ingest_basic_auth_password: ''
+vector_enabled: false             # enable vector log collector? push mode enables it automatically
 vector_clean: false               # purge vector data dir during init?
 vector_data: /data/vector         # vector data dir, /data/vector by default
 vector_port: 9598                 # vector metrics port, 9598 by default
 vector_read_from: beginning       # vector read from beginning or end
 vector_log_endpoint: [ infra ]    # if defined, sending vector log to this endpoint.
+
+#--------------------------------------------------------------#
+# PROCESS EXPORTER
+#--------------------------------------------------------------#
+process_exporter_enabled: false      # enable process_exporter, automatically recommended for push mode
+process_exporter_version: 0.7.10
+process_exporter_port: 9256
+process_exporter_binary: /usr/local/bin/process-exporter
+process_exporter_config_dir: /etc/process-exporter
+process_exporter_config_file: /etc/process-exporter/process-exporter.yml
 
 #-----------------------------------------------------------------
 # NODE_VIP (Reference)

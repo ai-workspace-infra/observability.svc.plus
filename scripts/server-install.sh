@@ -30,6 +30,86 @@ log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 log_ok() { echo -e "${GREEN}[OK]${NC} $1"; }
 
+append_unique() {
+    local value="$1"
+    local -n target_ref="$2"
+    [[ -z "${value}" ]] && return 0
+    local existing
+    for existing in "${target_ref[@]:-}"; do
+        if [[ "${existing}" == "${value}" ]]; then
+            return 0
+        fi
+    done
+    target_ref+=("${value}")
+}
+
+collect_local_ipv4s() {
+    local ips=()
+    local ip
+
+    if command -v hostname >/dev/null 2>&1; then
+        for ip in $(hostname -I 2>/dev/null || true); do
+            append_unique "${ip}" ips
+        done
+    fi
+
+    if command -v ip >/dev/null 2>&1; then
+        while read -r ip; do
+            append_unique "${ip}" ips
+        done < <(ip -o -4 addr show scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1)
+    fi
+
+    printf '%s\n' "${ips[@]}"
+}
+
+resolve_ipv4s() {
+    local host="$1"
+    local ips=()
+    local ip
+
+    if command -v getent >/dev/null 2>&1; then
+        while read -r ip _; do
+            append_unique "${ip}" ips
+        done < <(getent ahostsv4 "${host}" 2>/dev/null || true)
+    fi
+
+    if [[ ${#ips[@]} -eq 0 ]] && command -v host >/dev/null 2>&1; then
+        while read -r ip; do
+            append_unique "${ip}" ips
+        done < <(host "${host}" 2>/dev/null | awk '/has address/ {print $4}')
+    fi
+
+    printf '%s\n' "${ips[@]}"
+}
+
+domain_points_to_local_host() {
+    local host="$1"
+    local local_ip
+    local resolved_ip
+    local local_ips=()
+    local resolved_ips=()
+
+    while read -r local_ip; do
+        append_unique "${local_ip}" local_ips
+    done < <(collect_local_ipv4s)
+
+    while read -r resolved_ip; do
+        append_unique "${resolved_ip}" resolved_ips
+    done < <(resolve_ipv4s "${host}")
+
+    [[ ${#local_ips[@]} -eq 0 || ${#resolved_ips[@]} -eq 0 ]] && return 1
+
+    for resolved_ip in "${resolved_ips[@]}"; do
+        for local_ip in "${local_ips[@]}"; do
+            if [[ "${resolved_ip}" == "${local_ip}" ]]; then
+                return 0
+            fi
+        done
+    done
+
+    return 1
+}
+
 usage() {
     cat <<EOF
 Usage:
@@ -52,6 +132,10 @@ Examples:
   curl -fsSL ".../server-install.sh" | bash -s -- observability.svc.plus
   curl -fsSL ".../server-install.sh" | bash -s -- --action upgrade observability.svc.plus
   curl -fsSL ".../server-install.sh" | bash -s -- --action reset -y observability.svc.plus
+
+Notes:
+  DOMAIN is the public ingress domain. The current machine may still be named
+  us-xhttp.svc.plus while serving traffic for observability.svc.plus.
 EOF
 }
 
@@ -151,7 +235,27 @@ run_configure() {
         else
             sed -i '/vars:/a \    caddy_enabled: true' pigsty.yml
         fi
+
+        if grep -q "infra_domain:" pigsty.yml; then
+            sed -i -E "s#^([[:space:]]*infra_domain:).*#\\1 ${DOMAIN}#" pigsty.yml
+        else
+            sed -i "/caddy_enabled:/a\\    infra_domain: ${DOMAIN}" pigsty.yml
+        fi
+
+        if grep -qE '^([[:space:]]*)home[[:space:]]*:[[:space:]]*\{[[:space:]]*domain:' pigsty.yml; then
+            sed -i -E "s#^([[:space:]]*home[[:space:]]*:[[:space:]]*\\{[[:space:]]*domain:[[:space:]]*)[^,}]+(.*)#\\1${DOMAIN}\\2#" pigsty.yml
+        fi
     fi
+}
+
+check_dns_preflight() {
+    if domain_points_to_local_host "${DOMAIN}"; then
+        log_ok "DNS preflight passed: ${DOMAIN} resolves to this host."
+        return 0
+    fi
+
+    log_warn "DNS preflight: ${DOMAIN} does not currently resolve to this host."
+    log_warn "Recommended order: update DNS first, then deploy the server on this machine."
 }
 
 run_deploy() {
@@ -184,7 +288,7 @@ location = /ingest/metrics/api/v1/write {
     proxy_set_header X-Forwarded-Proto $scheme;
 }
 
-location = /ingest/logs/loki/api/v1/push {
+location = /ingest/logs/insert/loki/api/v1/push {
     proxy_pass http://127.0.0.1:9428/insert/loki/api/v1/push;
     proxy_set_header Host $http_host;
     proxy_set_header X-Real-IP $remote_addr;
@@ -261,6 +365,7 @@ deploy_or_upgrade() {
 
     ensure_repo
     ensure_root_ssh_access
+    check_dns_preflight
     run_bootstrap
     run_configure
     run_deploy

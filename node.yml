@@ -32,6 +32,12 @@
 #     node.yml -l <cls>      # add groups
 #     node.yml -l <ip>       # add single node
 #
+#  Observability push-agent mode:
+#     ./node.yml -l openclaw.svc.plus,jp-xhttp.svc.plus \
+#       -e node_monitor_mode=push \
+#       -e observability_endpoint=https://observability.svc.plus/ \
+#       -e haproxy_enabled=false
+#
 #  Bootstrap with another admin user: (Create admin with another admin)
 #     node.yml -t node_admin       # create admin user for nodes
 #     node.yml -t node_admin -k -K -e ansible_user=<another admin>

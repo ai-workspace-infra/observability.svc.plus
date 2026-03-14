@@ -268,7 +268,7 @@
 - name: setup nginx exporter
   ignore_errors: true
   tags: nginx_exporter
-  when: nginx_exporter_enabled|bool
+  when: nginx_enabled|bool and nginx_exporter_enabled|bool
   block:
     - name: copy nginx_exporter systemd service
       template: src=nginx/nginx_exporter.svc dest={{ systemd_dir }}/nginx_exporter.service owner=root group=root mode='0644'

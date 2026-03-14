@@ -46,10 +46,11 @@
       with_items:
         - { src: vector.svc  ,dest: "{{ systemd_dir }}/vector.service" }
         - { src: vector.env  ,dest: /etc/default/vector }
-        - { src: vector.yaml ,dest: /etc/vector/vector.yaml }
+        - { src: "{% if node_monitor_mode | default('pull') == 'push' %}vector-push.yaml{% else %}vector.yaml{% endif %}" ,dest: /etc/vector/vector.yaml }
 
     - name: register node syslog to vector
       tags: [ node_register, register ,add_logs ]
+      when: node_monitor_mode | default('pull') != 'push'
       template: src=node.yaml dest=/etc/vector/node.yaml mode=0600
 
 

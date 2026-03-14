@@ -45,6 +45,109 @@
       loop: '{{ groups["infra"]|default([]) }}'
       systemd: name=nginx state=reloaded enabled=yes daemon_reload=yes
 
+- name: validate observability push mode inputs
+  tags: [monitor, vector, process_exporter]
+  when: node_monitor_mode | default('pull') == 'push'
+  assert:
+    that:
+      - observability_endpoint | default('', true) | length > 0 or (observability_metrics_endpoint | default('', true) | length > 0 and observability_logs_endpoint | default('', true) | length > 0)
+    fail_msg: "Set observability_endpoint, or set both observability_metrics_endpoint and observability_logs_endpoint, when node_monitor_mode=push."
+
+- name: validate observability push mode basic auth inputs
+  tags: [monitor, vector, process_exporter, auth]
+  when:
+    - node_monitor_mode | default('pull') == 'push'
+    - observability_ingest_basic_auth_enabled | default(false) | bool
+  assert:
+    that:
+      - observability_ingest_basic_auth_user | default('', true) | length > 0
+      - observability_ingest_basic_auth_password | default('', true) | length > 0
+    fail_msg: "When observability_ingest_basic_auth_enabled=true in push mode, set observability_ingest_basic_auth_user and observability_ingest_basic_auth_password."
+
+- name: derive observability collector host for push mode
+  tags: [monitor, vector, process_exporter]
+  when: node_monitor_mode | default('pull') == 'push'
+  set_fact:
+    observability_collector_host: >-
+      {{
+        (
+          observability_endpoint
+          if (observability_endpoint | default('', true) | length > 0)
+          else (
+            observability_metrics_endpoint
+            if (observability_metrics_endpoint | default('', true) | length > 0)
+            else observability_logs_endpoint
+          )
+        )
+        | regex_replace('^[A-Za-z][A-Za-z0-9+.-]*://', '')
+        | regex_replace('/.*$', '')
+        | regex_replace(':.*$', '')
+      }}
+
+- name: detect whether observability collector is local
+  tags: [monitor, vector, process_exporter]
+  when: node_monitor_mode | default('pull') == 'push'
+  shell: |
+    set -eu
+    collector_host="{{ observability_collector_host }}"
+
+    if [ -z "${collector_host}" ]; then
+      exit 1
+    fi
+
+    matches_local_name() {
+      local candidate="$1"
+      [ -n "${candidate}" ] && [ "${collector_host}" = "${candidate}" ]
+    }
+
+    if matches_local_name "{{ inventory_hostname }}"; then
+      exit 0
+    fi
+
+    if matches_local_name "{{ nodename | default('', true) }}"; then
+      exit 0
+    fi
+
+    if matches_local_name "$(hostname -f 2>/dev/null || hostname 2>/dev/null || true)"; then
+      exit 0
+    fi
+
+    if matches_local_name "$(hostname -s 2>/dev/null || true)"; then
+      exit 0
+    fi
+
+    local_ips="$(
+      {
+        hostname -I 2>/dev/null || true
+        ip -o -4 addr show scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1
+      } | tr ' ' '\n' | sed '/^$/d' | sort -u
+    )"
+
+    resolved_ips="$(
+      {
+        getent ahostsv4 "${collector_host}" 2>/dev/null | awk '{print $1}' || true
+        host "${collector_host}" 2>/dev/null | awk '/has address/ {print $4}' || true
+      } | sed '/^$/d' | sort -u
+    )"
+
+    [ -n "${local_ips}" ] || exit 1
+    [ -n "${resolved_ips}" ] || exit 1
+
+    if comm -12 <(printf '%s\n' "${local_ips}") <(printf '%s\n' "${resolved_ips}") | grep -q .; then
+      exit 0
+    fi
+
+    exit 1
+  args: { executable: /bin/bash }
+  register: observability_collector_local_check
+  changed_when: false
+  failed_when: false
+
+- name: expose observability collector locality
+  tags: [monitor, vector, process_exporter]
+  when: node_monitor_mode | default('pull') == 'push'
+  set_fact:
+    observability_collector_is_local: "{{ observability_collector_local_check.rc == 0 }}"
 
 #--------------------------------------------------------------#
 # Register Instance DNS Name                           [vip_dns]
@@ -140,6 +243,7 @@
 # /infra/targets/node/{{ ip }}.yml
 - name: register node as victoria target
   tags: [ node_vip, node_register, register, add_metrics ]
+  when: node_monitor_mode | default('pull') != 'push'
   ignore_errors: true
   delegate_to: '{{ item }}'
   loop: '{{ groups["infra"]|default([]) }}'
@@ -168,6 +272,7 @@
 
 - name: register node as ping target
   tags: [ node_register, register, add_metrics ]
+  when: node_monitor_mode | default('pull') != 'push'
   ignore_errors: true
   delegate_to: '{{ item }}'
   loop: '{{ groups["infra"]|default([]) }}'
@@ -183,7 +288,7 @@
 
 - name: register node vip as ping target
   tags: [ node_vip, node_register, register, add_metrics ]
-  when: vip_enabled|bool and vip_address is defined and vip_address != ''
+  when: node_monitor_mode | default('pull') != 'push' and vip_enabled|bool and vip_address is defined and vip_address != ''
   ignore_errors: true
   delegate_to: '{{ item }}'
   loop: '{{ groups["infra"]|default([]) }}'
@@ -197,11 +302,14 @@
       - labels: { ip: {{ inventory_hostname }} , ins: {{ nodename }} , cls: {{ node_cluster|default('nodes') }}, vip: {{ vip_address }} , job: node-vip }
         targets: [ {{ vip_address }} ]
 
+- import_tasks: process_exporter.yml
+  tags: process_exporter
+  when: process_exporter_enabled | default(false) | bool or node_monitor_mode | default('pull') == 'push'
 
 #--------------------------------------------------------------#
 # Vector                                                [vector]
 #--------------------------------------------------------------#
 - import_tasks: vector.yml
   tags: vector
-  when: vector_enabled|bool
+  when: vector_enabled|bool or node_monitor_mode | default('pull') == 'push'
 ...
