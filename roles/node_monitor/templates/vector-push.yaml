@@ -1,7 +1,10 @@
 ---
 {% set base_endpoint = (observability_endpoint | default('', true) | regex_replace('/+$', '') | regex_replace('/ingest/otlp.*$', '')) %}
-{% set metrics_endpoint = observability_metrics_endpoint | default(base_endpoint ~ '/ingest/metrics/api/v1/write', true) %}
-{% set logs_endpoint = observability_logs_endpoint | default(base_endpoint ~ '/ingest/logs/insert', true) %}
+{% set collector_is_local = observability_collector_is_local | default(false) | bool %}
+{% set default_metrics_endpoint = 'http://127.0.0.1:' ~ (vmetrics_port | default(8428) | string) ~ '/api/v1/write' if collector_is_local else base_endpoint ~ '/ingest/metrics/api/v1/write' %}
+{% set default_logs_endpoint = 'http://127.0.0.1:' ~ (vlogs_port | default(9428) | string) ~ '/insert' if collector_is_local else base_endpoint ~ '/ingest/logs/insert' %}
+{% set metrics_endpoint = observability_metrics_endpoint | default(default_metrics_endpoint, true) %}
+{% set logs_endpoint = observability_logs_endpoint | default(default_logs_endpoint, true) %}
 data_dir: {{ vector_data }}
 
 api:

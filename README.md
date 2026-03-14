@@ -40,7 +40,7 @@ flowchart LR
 当前接入主机：
 
 - `us-xhttp.svc.plus`：继续承载现有服务，同时承载 `observability.svc.plus`
-- `clawdbot.svc.plus`：部署 agent，采集后上报到中心端
+- `openclaw.svc.plus`：部署 agent，采集后上报到中心端
 - `jp-xhttp.svc.plus`：部署 agent，采集后上报到中心端
 
 ### Ansible (Recommended)
@@ -70,9 +70,9 @@ ansible-playbook -i <your-inventory> deploy_observability_service.yml -l us-xhtt
 
 ```bash
 ansible-playbook -i <your-inventory> node.yml \
-  -l clawdbot.svc.plus,jp-xhttp.svc.plus \
+  -l openclaw.svc.plus,jp-xhttp.svc.plus \
   -e node_monitor_mode=push \
-  -e observability_endpoint=https://observability.svc.plus/ingest/otlp \
+  -e observability_endpoint=https://observability.svc.plus/ \
   -e haproxy_enabled=false
 ```
 
@@ -80,16 +80,18 @@ ansible-playbook -i <your-inventory> node.yml \
 
 ```bash
 ansible-playbook -i <your-inventory> node.yml \
-  -l clawdbot.svc.plus,jp-xhttp.svc.plus \
+  -l openclaw.svc.plus,jp-xhttp.svc.plus \
   -e node_monitor_mode=push \
-  -e observability_endpoint=https://observability.svc.plus/ingest/otlp \
+  -e observability_endpoint=https://observability.svc.plus/ \
   -e observability_ingest_basic_auth_enabled=true \
   -e observability_ingest_basic_auth_user=ingest \
   -e observability_ingest_basic_auth_password='<strong-password>' \
   -e haproxy_enabled=false
 ```
 
-> `node_monitor_mode=push` 会在远端主机上部署 `node_exporter + process_exporter + vector`，并把 metrics / logs 主动汇总到 `observability.svc.plus`。
+> `node_monitor_mode=push` 会在远端主机上部署 `node_exporter + process_exporter + vector`，并把 metrics / logs 主动汇总到 `observability.svc.plus`。`vector` 固定归到采集端任务，服务端 `infra.yml` 不再默认部署它。
+>
+> 如果采集端与 Victoria 服务端同机，playbook 会自动把 metrics / logs 改走本机 `127.0.0.1` ingest；跨主机时默认走 `https://observability.svc.plus/` 并自动补全 `/ingest/metrics/api/v1/write` 和 `/ingest/logs/insert`。
 >
 > `observability_ingest_basic_auth_*` 只保护 `/ingest/*` 写入入口，不影响 Caddy 暴露的其他站点页面；服务端和采集端必须使用同一组认证信息。
 
@@ -155,10 +157,10 @@ vi pigsty.yml                  # adjust domain/password/ports
 
 Default inventory template: `conf/app/deepflow.yml`
 
-### Remote client example (clawdbot.svc.plus)
+### Remote client example (openclaw.svc.plus)
 
 ```bash
-ssh root@clawdbot.svc.plus \
+ssh root@openclaw.svc.plus \
   'curl -fsSL https://raw.githubusercontent.com/cloud-neutral-toolkit/observability.svc.plus/main/scripts/agent-install.sh \
     | bash -s -- --endpoint https://observability.svc.plus/ingest/otlp'
 ```
@@ -174,11 +176,11 @@ ssh root@jp-xhttp.svc.plus \
 ### Optional SSH manager env example
 
 ```bash
-SSH_SERVER_CLAWBOT_HOST=clawdbot.svc.plus
+SSH_SERVER_CLAWBOT_HOST=openclaw.svc.plus
 SSH_SERVER_CLAWBOT_USER=root
 SSH_SERVER_CLAWBOT_KEYPATH=~/.ssh/id_rsa
 SSH_SERVER_CLAWBOT_PORT=22
-SSH_SERVER_CLAWBOT_DESCRIPTION=clawdbot_server
+SSH_SERVER_CLAWBOT_DESCRIPTION=openclaw_server
 ```
 
 ## 4) Features

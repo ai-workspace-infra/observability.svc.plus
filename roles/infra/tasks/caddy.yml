@@ -21,10 +21,41 @@
   tags: caddy_config
   template:
     src: caddy/Caddyfile
+    dest: /etc/caddy/conf.d/observability.caddy
+    owner: root
+    group: root
+    mode: '0644'
+  notify: reload caddy
+
+- name: check existing caddy main config
+  tags: caddy_config
+  stat:
+    path: /etc/caddy/Caddyfile
+  register: caddy_main_config
+
+- name: bootstrap caddy main config when missing
+  tags: caddy_config
+  copy:
     dest: /etc/caddy/Caddyfile
     owner: root
     group: root
     mode: '0644'
+    content: |
+      {
+      }
+
+      import /etc/caddy/conf.d/*.caddy
+  when: not caddy_main_config.stat.exists
+  notify: reload caddy
+
+- name: ensure caddy main config imports conf.d snippets
+  tags: caddy_config
+  lineinfile:
+    path: /etc/caddy/Caddyfile
+    line: "import /etc/caddy/conf.d/*.caddy"
+    insertafter: EOF
+    state: present
+  when: caddy_main_config.stat.exists
   notify: reload caddy
 
 #--------------------------------------------------------------#

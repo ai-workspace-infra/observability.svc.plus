@@ -63,6 +63,7 @@
 #--------------------------------------------------------------#
 # dns_config, dns_record, dns_launch
 - import_tasks: dns.yml
+  when: dns_enabled|bool
   tags: dns
 
 #--------------------------------------------------------------#

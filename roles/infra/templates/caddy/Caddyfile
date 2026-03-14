@@ -1,7 +1,3 @@
-{
-	# debug
-}
-
 {{ infra_domain | default('observability.svc.plus') }} {
 	encode gzip zstd
 

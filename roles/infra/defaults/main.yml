@@ -64,7 +64,7 @@ certbot_options: ''               # certbot extra options
 #-----------------------------------------------------------------
 # DNS
 #-----------------------------------------------------------------
-dns_enabled: true                 # setup dnsmasq on this infra node?
+dns_enabled: false                # setup dnsmasq on this infra node?
 dns_port: 53                      # dns server listen port, 53 by default
 dns_records:                      # dynamic dns records resolved by dnsmasq
   - "${admin_ip} i.pigsty"
