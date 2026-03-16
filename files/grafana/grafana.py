@@ -16,6 +16,38 @@ USERNAME = os.environ.get("GRAFANA_USERNAME", 'admin')
 PASSWORD = os.environ.get("GRAFANA_PASSWORD", 'pigsty')
 CREATE_FOLDERS = True
 
+FOLDER_TITLES = {
+    '01-iaas-compute': 'IAAS / 计算',
+    '02-iaas-storage': 'IAAS / 存储',
+    '03-iaas-network': 'IAAS / 网络',
+    '11-paas-control-plane': 'PaaS / 平台控制面',
+    '12-paas-cluster': 'PaaS / 集群',
+    '13-paas-db': 'PaaS / DB',
+    '14-paas-cache': 'PaaS / 缓存',
+    '15-paas-queue': 'PaaS / 队列',
+    '21-bu-dns': '业务单元 / DNS',
+    '22-bu-proxy': '业务单元 / 代理',
+    '23-bu-gateway': '业务单元 / 网关',
+    '24-bu-request': '业务单元 / 请求',
+    '25-bu-throughput': '业务单元 / 吞吐',
+}
+
+FOLDER_TAGS = {
+    '01-iaas-compute': ['IAAS', 'IAAS-COMPUTE'],
+    '02-iaas-storage': ['IAAS', 'IAAS-STORAGE'],
+    '03-iaas-network': ['IAAS', 'IAAS-NETWORK'],
+    '11-paas-control-plane': ['PAAS', 'PAAS-CONTROL-PLANE'],
+    '12-paas-cluster': ['PAAS', 'PAAS-CLUSTER'],
+    '13-paas-db': ['PAAS', 'PAAS-DB'],
+    '14-paas-cache': ['PAAS', 'PAAS-CACHE'],
+    '15-paas-queue': ['PAAS', 'PAAS-QUEUE'],
+    '21-bu-dns': ['BU', 'BU-DNS'],
+    '22-bu-proxy': ['BU', 'BU-PROXY'],
+    '23-bu-gateway': ['BU', 'BU-GATEWAY'],
+    '24-bu-request': ['BU', 'BU-REQUEST'],
+    '25-bu-throughput': ['BU', 'BU-THROUGHPUT'],
+}
+
 METADB_PASSWORD = 'DBUser.Viewer'
 DEFAULT_DATASOURCES = {
     'ds-prometheus': {'uid': 'ds-prometheus', 'orgId': 1, 'name': 'Prometheus', 'type': 'prometheus', 'typeName': 'Prometheus', 'typeLogoUrl': 'public/app/plugins/datasource/prometheus/img/prometheus_logo.svg', 'access': 'proxy',
@@ -118,7 +150,7 @@ def add_folder(uid, title=""):
     if not CREATE_FOLDERS:
         return
     if title == "":
-        title = uid.upper()
+        title = resolve_folder_title(uid)
     post('folders', {"uid": uid, "title": title})
     return put('folders/%s' % uid, {"title": title, "overwrite": True})
 
@@ -212,6 +244,30 @@ def load_dashboard(path, substitute=False):
     else:
         return json.load(open(path))
 
+
+def resolve_folder_title(uid):
+    return FOLDER_TITLES.get(uid, uid.upper())
+
+
+def enrich_dashboard(dashboard, folder=None):
+    if not folder:
+        return dashboard
+    extra_tags = FOLDER_TAGS.get(folder, [])
+    if not extra_tags:
+        return dashboard
+    existing_tags = dashboard.get("tags", [])
+    if not isinstance(existing_tags, list):
+        existing_tags = []
+    merged_tags = []
+    seen = set()
+    for tag in existing_tags + extra_tags:
+        if not tag or tag in seen:
+            continue
+        seen.add(tag)
+        merged_tags.append(tag)
+    dashboard["tags"] = merged_tags
+    return dashboard
+
 # json serializer: use compact_json if available, fallback to standard json
 try:
     from compact_json import Formatter
@@ -283,13 +339,13 @@ def init_all(dashboard_dir):
     # load other second-layer dashboards
     for folder_name, folder_path in folders:
         print("init folder %s" % folder_name)
-        add_folder(folder_name, folder_name.upper())
+        add_folder(folder_name, resolve_folder_title(folder_name))
 
         for f in os.listdir(folder_path):
             abs_path = os.path.join(dashboard_dir, folder_name, f)
             if os.path.isfile(abs_path) and f.endswith('.json') and not f.startswith('.'):
                 print("init dashboard: %s / %s" % (folder_name, f))
-                add_dashboard(load_dashboard(abs_path, True), folder_name)
+                add_dashboard(enrich_dashboard(load_dashboard(abs_path, True), folder_name), folder_name)
 
 
 def load_all(dashboard_dir):
@@ -305,13 +361,13 @@ def load_all(dashboard_dir):
 
     for folder_name, folder_path in folders:
         print("add folder %s" % folder_name)
-        add_folder(folder_name, folder_name.upper())
+        add_folder(folder_name, resolve_folder_title(folder_name))
 
         for f in os.listdir(folder_path):
             abs_path = os.path.join(dashboard_dir, folder_name, f)
             if os.path.isfile(abs_path) and f.endswith('.json') and not f.startswith('.'):
                 print("load dashboard: %s / %s" % (folder_name, f))
-                add_dashboard(load_dashboard(abs_path), folder_name)
+                add_dashboard(enrich_dashboard(load_dashboard(abs_path), folder_name), folder_name)
 
 
 def dump_all(dashboard_dir):

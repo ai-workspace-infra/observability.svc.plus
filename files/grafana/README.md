@@ -1,28 +1,31 @@
 # Grafana Dashboards
 
-This directory contains Grafana dashboard definitions for Pigsty monitoring system.
+This directory contains Grafana dashboard definitions for the observability stack.
 
 ## Overview
 
-Pigsty provides **57 built-in dashboards** organized by module:
+The repository currently provides **61 domain dashboards + 1 homepage dashboard**.
+Dashboards are organized by platform-engineering resource domains:
 
-| Directory       | Count | Description                                                             |
-|-----------------|-------|-------------------------------------------------------------------------|
-| [pgsql](pgsql/) | 29    | PostgreSQL cluster, instance, database, and query monitoring            |
-| [infra](infra/) | 11    | Infrastructure components (VictoriaMetrics, Grafana, Nginx, etcd, etc.) |
-| [node](node/)   | 8     | Host-level metrics (CPU, memory, disk, network, HAProxy, VIP)           |
-| [redis](redis/) | 3     | Redis cluster and instance monitoring                                   |
-| [app](app/)     | 2     | Application dashboards (PostgreSQL logs analysis)                       |
-| [minio](minio/) | 2     | MinIO S3-compatible storage monitoring                                  |
-| [mongo](mongo/) | 1     | MongoDB/FerretDB monitoring                                             |
-| -               | 1     | [pigsty.json](pigsty.json) - Main home dashboard                        |
+| Folder | Count | Description |
+|--------|-------|-------------|
+| [01-iaas-compute](01-iaas-compute/) | 5 | IAAS compute: node overview, cluster, instance, alert, compatibility summary |
+| [02-iaas-storage](02-iaas-storage/) | 4 | IAAS storage: disk, JuiceFS, MinIO overview and instance |
+| [03-iaas-network](03-iaas-network/) | 1 | IAAS network: VIP and node-network entry |
+| [11-paas-control-plane](11-paas-control-plane/) | 10 | PaaS control plane: Pigsty, Grafana, Victoria stack, Alertmanager, etcd, CMDB |
+| [12-paas-cluster](12-paas-cluster/) | 1 | PaaS cluster: Kubernetes overview |
+| [13-paas-db](13-paas-db/) | 29 | PaaS DB: PostgreSQL, PGRDS, PGCAT, Mongo/FerretDB |
+| [14-paas-cache](14-paas-cache/) | 3 | PaaS cache: Redis overview, cluster, instance |
+| [22-bu-proxy](22-bu-proxy/) | 2 | Business unit proxy: Nginx and HAProxy |
+| [24-bu-request](24-bu-request/) | 5 | Business unit request: logs, sessions, vector, request-side tooling |
+| - | 1 | [homepage.json](homepage.json) - Platform engineering entry dashboard |
 
 
 ## Dashboard Catalog
 
 ### Home
 
-- **[pigsty.json](pigsty.json)** - Pigsty home dashboard with global overview
+- **[homepage.json](homepage.json)** - Platform engineering entry dashboard with domain summaries and navigation
 
 ### PGSQL Dashboards
 
