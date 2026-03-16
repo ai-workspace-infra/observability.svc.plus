@@ -5,7 +5,10 @@
 # nginx are idempotent on multiple meta nodes
 - name: register haproxy instance to nginx
   tags: [ haproxy_register, register_nginx, register, add_proxy ]
-  when: haproxy_enabled|bool
+  when:
+    - haproxy_enabled|bool
+    - nginx_enabled | default(false) | bool
+    - node_monitor_mode | default('pull') != 'push'
   become: true
   block:
 

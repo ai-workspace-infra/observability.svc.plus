@@ -2,7 +2,7 @@
 #-----------------------------------------------------------------
 # HAPROXY
 #-----------------------------------------------------------------
-haproxy_enabled: true             # enable haproxy on this node?
+haproxy_enabled: false            # enable haproxy on this node?
 haproxy_clean: false              # cleanup all existing haproxy config?
 haproxy_reload: true              # reload haproxy after config?
 haproxy_auth_enabled: true        # enable authentication for haproxy admin page

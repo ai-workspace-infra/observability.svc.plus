@@ -12,13 +12,12 @@
 
         # Prometheus remote_write
         handle_path /ingest/metrics/* {
-        	# 可选：加 basic auth / IP 白名单
-        	reverse_proxy 127.0.0.1:12345
+        	reverse_proxy 127.0.0.1:8428
         }
 
         # Loki push (expects /loki/api/v1/push)
         handle_path /ingest/logs/* {
-        	reverse_proxy 127.0.0.1:12346
+        	reverse_proxy 127.0.0.1:9428
         }
 
         # OTLP HTTP (POST /v1/traces, /v1/metrics, /v1/logs)
