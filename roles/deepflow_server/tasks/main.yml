@@ -33,6 +33,7 @@
         - "{{ deepflow_stack_dir }}"
         - "{{ deepflow_data }}"
         - "{{ deepflow_data }}/server"
+        - "{{ deepflow_server_config_dir }}"
 
     - name: render deepflow environment
       template:
@@ -41,6 +42,14 @@
         owner: root
         group: root
         mode: '0640'
+
+    - name: render deepflow server config
+      template:
+        src: server.yaml.j2
+        dest: "{{ deepflow_server_config_file }}"
+        owner: root
+        group: root
+        mode: '0644'
 
     - name: render deepflow docker compose
       template:

@@ -19,6 +19,8 @@
     - { role: deepflow_mysql        , tags: deepflow_mysql,        when: deepflow_mysql_enabled | default(true) | bool }
     - { role: deepflow_clickhouse_s3, tags: deepflow_clickhouse_s3, when: deepflow_clickhouse_s3_enabled | default(true) | bool }
     - { role: deepflow_server       , tags: deepflow_server,       when: deepflow_enabled | default(true) | bool }
+    - { role: deepflow_connector    , tags: deepflow_connector,    when: deepflow_connector_enabled | default(false) | bool }
+    - { role: deepflow_agent        , tags: deepflow_agent,        when: deepflow_agent_enabled | default(false) | bool }
 
 # Usage:
 # 1. Define deepflow group in pigsty.yml

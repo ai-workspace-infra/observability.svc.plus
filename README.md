@@ -5,7 +5,7 @@
 
 **Observability.svc.plus** is an observability solution strictly following the Apache 2.0 license.
 
-> **Focus**: Monitoring & Observability (监控/可观测). Integrating OpenTelemetry (OTel), with future plans to incorporate DeepFlow Agent and other open-source NPM (Network Performance Monitoring) probes.
+> **Focus**: Monitoring & Observability (监控/可观测). Integrating OpenTelemetry (OTel), VictoriaMetrics, and DeepFlow-based network observability without long-term raw-flow lock-in.
 
 [Website](https://svc.plus/) | [Public Demo](https://svc.plus/services) | [Blog](https://svc.plus/blogs) | [Support](https://www.svc.plus/support)
 
@@ -141,11 +141,13 @@ This repo now provides dedicated DeepFlow roles:
 - `deepflow_mysql`
 - `deepflow_clickhouse_s3`
 - `deepflow_server`
+- `deepflow_connector`
+- `deepflow_agent`
 
 Quick start:
 
 ```bash
-./configure -c app/deepflow
+./configure -c deepflow/deepflow
 vi pigsty.yml                  # adjust domain/password/ports
 ./deploy.yml
 ./docker.yml
@@ -153,7 +155,16 @@ vi pigsty.yml                  # adjust domain/password/ports
 ./infra.yml -t caddy           # apply deepflow_grpc_domain ingress
 ```
 
-Default inventory template: `conf/app/deepflow.yml`
+Default inventory template: `conf/deepflow/deepflow.yml`
+
+### Lightweight Topology
+
+- `deepflow-server` stays containerized with Docker Compose
+- ClickHouse is kept as short-retention local storage
+- MinIO/S3 is optional in lightweight mode
+- `deepflow_connector` exports selected DeepFlow L4/L7 metrics to VictoriaMetrics
+- `deepflow_agent` supports `binary/systemd`, `docker`, and rendered `k8s` manifests
+- default `deepflow_agent_profile=lite` keeps `pcap` enabled and disables built-in `vector`
 
 ### Remote client example (openclaw.svc.plus)
 
@@ -185,7 +196,7 @@ SSH_SERVER_CLAWBOT_DESCRIPTION=openclaw_server
 
 - **Observability First**: SOTA monitoring for PG / Infra / Node based on VictoriaMetrics, Grafana, and OpenTelemetry.
 - **OTel Integration**: Native support for OpenTelemetry, facilitating unified trace, metric, and log ingestion.
-- **Future Ready**: Planned integration for DeepFlow Agent and other open-source NPM probes for deep network and application observability.
+- **DeepFlow Ready**: Lightweight DeepFlow server/agent deployment with short-lived flow storage and VictoriaMetrics archiving for high-value protocol metrics.
 - **Reliable Base**: Robust self-healing HA clusters, PITR, and secure infrastructure.
 - **Maintainable**: One-Cmd Deploy, IaC support, and easy customization.
 - **Controllable**: Self-sufficient Cloud Neutral FOSS. Run on bare Linux.

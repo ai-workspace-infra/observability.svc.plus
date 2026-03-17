@@ -33,7 +33,9 @@
         - "{{ deepflow_clickhouse_s3_stack_dir }}"
         - "{{ deepflow_data }}"
         - "{{ deepflow_clickhouse_data }}"
+        - "{{ deepflow_clickhouse_config_dir }}"
         - "{{ deepflow_s3_data }}"
+      when: item != deepflow_s3_data or deepflow_s3_enabled | bool
 
     - name: render deepflow clickhouse+s3 environment
       template:
@@ -42,6 +44,14 @@
         owner: root
         group: root
         mode: '0640'
+
+    - name: render deepflow clickhouse config
+      template:
+        src: clickhouse-config.d/retention.xml.j2
+        dest: "{{ deepflow_clickhouse_config_dir }}/retention.xml"
+        owner: root
+        group: root
+        mode: '0644'
 
     - name: render deepflow clickhouse+s3 docker compose
       template:
@@ -83,3 +93,4 @@
         host: 127.0.0.1
         port: "{{ deepflow_minio_api_port }}"
         timeout: 60
+      when: deepflow_s3_enabled | bool

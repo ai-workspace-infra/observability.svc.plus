@@ -17,7 +17,9 @@ services:
         hard: 262144
     volumes:
       - ${DEEPFLOW_CLICKHOUSE_DATA}:/var/lib/clickhouse
+      - ${DEEPFLOW_CLICKHOUSE_CONFIG_DIR}:/etc/clickhouse-server/config.d:ro
 
+{% if deepflow_s3_enabled | bool %}
   minio:
     container_name: deepflow-minio
     image: ${DEEPFLOW_MINIO_IMAGE}
@@ -31,3 +33,4 @@ services:
       - '${DEEPFLOW_MINIO_CONSOLE_PORT}:9001'
     volumes:
       - ${DEEPFLOW_S3_DATA}:/data
+{% endif %}
