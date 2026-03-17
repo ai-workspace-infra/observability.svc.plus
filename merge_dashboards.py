@@ -103,7 +103,7 @@ DOMAIN_SECTIONS = [
         ],
     },
     {
-        "title": "业务单元",
+        "title": "业务监控",
         "items": [
             {
                 "title": "代理",
@@ -209,38 +209,34 @@ def summary_card_html(item):
 
 def homepage_nav_html():
     return """
-<div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:8px 4px 2px 4px;">
-  <div>
-    <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">Platform Engineering Home</div>
-    <div style="font-size:28px;font-weight:800;color:#111827;">平台工程总览入口</div>
-    <div style="font-size:13px;color:#4b5563;margin-top:6px;">首页只保留全局脉搏、资源域摘要与跳转，详细明细统一下沉到二级 dashboard。</div>
+<div style="padding:6px 2px 0 2px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+    <div>
+      <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">Platform Engineering Home</div>
+      <div style="font-size:24px;font-weight:800;color:#111827;line-height:1.15;">平台工程总览入口</div>
+      <div style="font-size:12px;color:#4b5563;margin-top:4px;line-height:1.45;">按 IaaS、PaaS、SaaS 逐层下钻，首页只保留入口与全局脉搏。</div>
+    </div>
+    <div style="font-size:11px;color:#94a3b8;font-weight:700;letter-spacing:0.04em;">IaaS → PaaS → SaaS</div>
   </div>
-  <div style="display:flex;gap:12px;flex-wrap:wrap;">
-    <span style="padding:10px 16px;border-radius:999px;background:#dbeafe;color:#1d4ed8;font-weight:700;">IAAS资源</span>
-    <span style="padding:10px 16px;border-radius:999px;background:#ecfdf3;color:#047857;font-weight:700;">PaaS服务</span>
-    <span style="padding:10px 16px;border-radius:999px;background:#fff7ed;color:#c2410c;font-weight:700;">业务单元</span>
-  </div>
-</div>
-"""
-
-
-def homepage_guide_html():
-    return """
-<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:4px 2px 0 2px;">
-  <div style="border:1px solid #d1d5db;border-radius:12px;padding:12px 14px;background:#fbfdff;">
-    <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">IAAS资源</div>
-    <div style="font-size:14px;font-weight:700;color:#111827;">计算 / 存储 / 网络</div>
-    <div style="font-size:12px;color:#6b7280;margin-top:6px;">先看宿主、磁盘、VIP 与底层资源是否健康。</div>
-  </div>
-  <div style="border:1px solid #d1d5db;border-radius:12px;padding:12px 14px;background:#fbfdff;">
-    <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">PaaS服务</div>
-    <div style="font-size:14px;font-weight:700;color:#111827;">控制面 / 集群 / DB / 缓存</div>
-    <div style="font-size:12px;color:#6b7280;margin-top:6px;">平台自身与共享服务按资源域稳定分层。</div>
-  </div>
-  <div style="border:1px solid #d1d5db;border-radius:12px;padding:12px 14px;background:#fbfdff;">
-    <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">业务单元</div>
-    <div style="font-size:14px;font-weight:700;color:#111827;">代理 / 请求</div>
-    <div style="font-size:12px;color:#6b7280;margin-top:6px;">业务接入面与请求观测单独收口，不再混在底层资源里。</div>
+  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
+    <div style="border:1px solid #c7d2fe;border-radius:999px;padding:12px 18px;background:#eef4ff;min-height:0;display:flex;align-items:center;justify-content:center;">
+      <div style="text-align:center;">
+        <div style="font-size:26px;color:#1d4ed8;font-weight:800;line-height:1.1;">IaaS资源</div>
+        <div style="font-size:12px;color:#5b6b91;margin-top:4px;">计算 / 存储 / 网络</div>
+      </div>
+    </div>
+    <div style="border:1px solid #bbf7d0;border-radius:999px;padding:12px 18px;background:#effdf4;min-height:0;display:flex;align-items:center;justify-content:center;">
+      <div style="text-align:center;">
+        <div style="font-size:26px;color:#047857;font-weight:800;line-height:1.1;">PaaS服务</div>
+        <div style="font-size:12px;color:#537566;margin-top:4px;">控制面 / 集群 / DB / 缓存</div>
+      </div>
+    </div>
+    <div style="border:1px solid #fed7aa;border-radius:999px;padding:12px 18px;background:#fff7ed;min-height:0;display:flex;align-items:center;justify-content:center;">
+      <div style="text-align:center;">
+      <div style="font-size:26px;color:#c2410c;font-weight:800;line-height:1.1;">业务监控</div>
+        <div style="font-size:12px;color:#8a6b53;margin-top:4px;">代理 / 请求</div>
+      </div>
+    </div>
   </div>
 </div>
 """
@@ -324,24 +320,20 @@ def merge_dashboards():
 
     panel_id = 1
     homepage["panels"].append(
-        make_text_panel(panel_id, "总览导航", homepage_nav_html(), 0, 0, 24, 3)
-    )
-    panel_id += 1
-    homepage["panels"].append(
-        make_text_panel(panel_id, "结构说明", homepage_guide_html(), 0, 3, 24, 5)
+        make_text_panel(panel_id, "总览导航", homepage_nav_html(), 0, 0, 24, 5)
     )
     panel_id += 1
 
-    current_y = 8
+    current_y = 5
     homepage["panels"].append(make_row_panel(panel_id, "平台脉搏", current_y))
     panel_id += 1
     current_y += 1
 
     summary_layout = [
-        ("Pigsty ${version}", 0, 4, 4, 7),
-        ("Modules", 4, 4, 4, 7),
-        ("Instances", 8, 4, 8, 7),
-        ("Firing Alerts", 16, 4, 8, 7),
+        ("Pigsty ${version}", 0, 6, 4, 6),
+        ("Modules", 4, 6, 4, 6),
+        ("Instances", 8, 6, 8, 6),
+        ("Firing Alerts", 16, 6, 8, 6),
     ]
     summary_panels = {panel.get("title"): panel for panel in select_platform_summary_panels(control_plane)}
     for title, x, y, w, h in summary_layout:
@@ -349,7 +341,7 @@ def merge_dashboards():
             continue
         homepage["panels"].append(clone_panel(summary_panels[title], x, y, w, h))
         panel_id += 1
-    current_y += 7
+    current_y += 6
 
     for section in DOMAIN_SECTIONS:
         panel_id, current_y = add_domain_section(homepage, panel_id, current_y, section)

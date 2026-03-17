@@ -91,35 +91,19 @@
       "type": "text",
       "title": "\u603b\u89c8\u5bfc\u822a",
       "gridPos": {
-        "h": 3,
+        "h": 5,
         "w": 24,
         "x": 0,
         "y": 0
       },
       "transparent": true,
       "options": {
-        "content": "\n<div style=\"display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:8px 4px 2px 4px;\">\n  <div>\n    <div style=\"font-size:12px;color:#6b7280;margin-bottom:6px;\">Platform Engineering Home</div>\n    <div style=\"font-size:28px;font-weight:800;color:#111827;\">\u5e73\u53f0\u5de5\u7a0b\u603b\u89c8\u5165\u53e3</div>\n    <div style=\"font-size:13px;color:#4b5563;margin-top:6px;\">\u9996\u9875\u53ea\u4fdd\u7559\u5168\u5c40\u8109\u640f\u3001\u8d44\u6e90\u57df\u6458\u8981\u4e0e\u8df3\u8f6c\uff0c\u8be6\u7ec6\u660e\u7ec6\u7edf\u4e00\u4e0b\u6c89\u5230\u4e8c\u7ea7 dashboard\u3002</div>\n  </div>\n  <div style=\"display:flex;gap:12px;flex-wrap:wrap;\">\n    <span style=\"padding:10px 16px;border-radius:999px;background:#dbeafe;color:#1d4ed8;font-weight:700;\">IAAS\u8d44\u6e90</span>\n    <span style=\"padding:10px 16px;border-radius:999px;background:#ecfdf3;color:#047857;font-weight:700;\">PaaS\u670d\u52a1</span>\n    <span style=\"padding:10px 16px;border-radius:999px;background:#fff7ed;color:#c2410c;font-weight:700;\">\u4e1a\u52a1\u5355\u5143</span>\n  </div>\n</div>\n",
+        "content": "\n<div style=\"padding:6px 2px 0 2px;\">\n  <div style=\"display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:10px;\">\n    <div>\n      <div style=\"font-size:11px;color:#6b7280;margin-bottom:4px;\">Platform Engineering Home</div>\n      <div style=\"font-size:24px;font-weight:800;color:#111827;line-height:1.15;\">\u5e73\u53f0\u5de5\u7a0b\u603b\u89c8\u5165\u53e3</div>\n      <div style=\"font-size:12px;color:#4b5563;margin-top:4px;line-height:1.45;\">\u6309 IaaS\u3001PaaS\u3001SaaS \u9010\u5c42\u4e0b\u94bb\uff0c\u9996\u9875\u53ea\u4fdd\u7559\u5165\u53e3\u4e0e\u5168\u5c40\u8109\u640f\u3002</div>\n    </div>\n    <div style=\"font-size:11px;color:#94a3b8;font-weight:700;letter-spacing:0.04em;\">IaaS \u2192 PaaS \u2192 SaaS</div>\n  </div>\n  <div style=\"display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;\">\n    <div style=\"border:1px solid #c7d2fe;border-radius:999px;padding:12px 18px;background:#eef4ff;min-height:0;display:flex;align-items:center;justify-content:center;\">\n      <div style=\"text-align:center;\">\n        <div style=\"font-size:26px;color:#1d4ed8;font-weight:800;line-height:1.1;\">IaaS\u8d44\u6e90</div>\n        <div style=\"font-size:12px;color:#5b6b91;margin-top:4px;\">\u8ba1\u7b97 / \u5b58\u50a8 / \u7f51\u7edc</div>\n      </div>\n    </div>\n    <div style=\"border:1px solid #bbf7d0;border-radius:999px;padding:12px 18px;background:#effdf4;min-height:0;display:flex;align-items:center;justify-content:center;\">\n      <div style=\"text-align:center;\">\n        <div style=\"font-size:26px;color:#047857;font-weight:800;line-height:1.1;\">PaaS\u670d\u52a1</div>\n        <div style=\"font-size:12px;color:#537566;margin-top:4px;\">\u63a7\u5236\u9762 / \u96c6\u7fa4 / DB / \u7f13\u5b58</div>\n      </div>\n    </div>\n    <div style=\"border:1px solid #fed7aa;border-radius:999px;padding:12px 18px;background:#fff7ed;min-height:0;display:flex;align-items:center;justify-content:center;\">\n      <div style=\"text-align:center;\">\n      <div style=\"font-size:26px;color:#c2410c;font-weight:800;line-height:1.1;\">\u4e1a\u52a1\u76d1\u63a7</div>\n        <div style=\"font-size:12px;color:#8a6b53;margin-top:4px;\">\u4ee3\u7406 / \u8bf7\u6c42</div>\n      </div>\n    </div>\n  </div>\n</div>\n",
         "mode": "html"
       }
     },
     {
       "id": 2,
-      "type": "text",
-      "title": "\u7ed3\u6784\u8bf4\u660e",
-      "gridPos": {
-        "h": 5,
-        "w": 24,
-        "x": 0,
-        "y": 3
-      },
-      "transparent": true,
-      "options": {
-        "content": "\n<div style=\"display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:4px 2px 0 2px;\">\n  <div style=\"border:1px solid #d1d5db;border-radius:12px;padding:12px 14px;background:#fbfdff;\">\n    <div style=\"font-size:12px;color:#6b7280;margin-bottom:6px;\">IAAS\u8d44\u6e90</div>\n    <div style=\"font-size:14px;font-weight:700;color:#111827;\">\u8ba1\u7b97 / \u5b58\u50a8 / \u7f51\u7edc</div>\n    <div style=\"font-size:12px;color:#6b7280;margin-top:6px;\">\u5148\u770b\u5bbf\u4e3b\u3001\u78c1\u76d8\u3001VIP \u4e0e\u5e95\u5c42\u8d44\u6e90\u662f\u5426\u5065\u5eb7\u3002</div>\n  </div>\n  <div style=\"border:1px solid #d1d5db;border-radius:12px;padding:12px 14px;background:#fbfdff;\">\n    <div style=\"font-size:12px;color:#6b7280;margin-bottom:6px;\">PaaS\u670d\u52a1</div>\n    <div style=\"font-size:14px;font-weight:700;color:#111827;\">\u63a7\u5236\u9762 / \u96c6\u7fa4 / DB / \u7f13\u5b58</div>\n    <div style=\"font-size:12px;color:#6b7280;margin-top:6px;\">\u5e73\u53f0\u81ea\u8eab\u4e0e\u5171\u4eab\u670d\u52a1\u6309\u8d44\u6e90\u57df\u7a33\u5b9a\u5206\u5c42\u3002</div>\n  </div>\n  <div style=\"border:1px solid #d1d5db;border-radius:12px;padding:12px 14px;background:#fbfdff;\">\n    <div style=\"font-size:12px;color:#6b7280;margin-bottom:6px;\">\u4e1a\u52a1\u5355\u5143</div>\n    <div style=\"font-size:14px;font-weight:700;color:#111827;\">\u4ee3\u7406 / \u8bf7\u6c42</div>\n    <div style=\"font-size:12px;color:#6b7280;margin-top:6px;\">\u4e1a\u52a1\u63a5\u5165\u9762\u4e0e\u8bf7\u6c42\u89c2\u6d4b\u5355\u72ec\u6536\u53e3\uff0c\u4e0d\u518d\u6df7\u5728\u5e95\u5c42\u8d44\u6e90\u91cc\u3002</div>\n  </div>\n</div>\n",
-        "mode": "html"
-      }
-    },
-    {
-      "id": 3,
       "type": "row",
       "title": "\u5e73\u53f0\u8109\u640f",
       "collapsed": false,
@@ -128,7 +112,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 8
+        "y": 5
       }
     },
     {
@@ -332,11 +316,11 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 4,
+        "y": 6,
         "w": 4,
-        "h": 7
+        "h": 6
       },
-      "id": 4,
+      "id": 3,
       "links": [
         {
           "title": "Pigsty Docs",
@@ -750,11 +734,11 @@
       },
       "gridPos": {
         "x": 4,
-        "y": 4,
+        "y": 6,
         "w": 4,
-        "h": 7
+        "h": 6
       },
-      "id": 5,
+      "id": 4,
       "links": [
         {
           "targetBlank": true,
@@ -1525,11 +1509,11 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 4,
+        "y": 6,
         "w": 8,
-        "h": 7
+        "h": 6
       },
-      "id": 6,
+      "id": 5,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
@@ -1904,11 +1888,11 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 4,
+        "y": 6,
         "w": 8,
-        "h": 7
+        "h": 6
       },
-      "id": 7,
+      "id": 6,
       "options": {
         "legend": {
           "calcs": [
@@ -1956,7 +1940,7 @@
       "type": "timeseries"
     },
     {
-      "id": 8,
+      "id": 7,
       "type": "row",
       "title": "IAAS\u8d44\u6e90",
       "collapsed": false,
@@ -1965,18 +1949,18 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 12
       }
     },
     {
-      "id": 9,
+      "id": 8,
       "type": "text",
       "title": "\u8ba1\u7b97\u6458\u8981",
       "gridPos": {
         "h": 5,
         "w": 8,
         "x": 0,
-        "y": 17
+        "y": 13
       },
       "transparent": true,
       "options": {
@@ -1985,14 +1969,14 @@
       }
     },
     {
-      "id": 10,
+      "id": 9,
       "type": "text",
       "title": "\u5b58\u50a8\u6458\u8981",
       "gridPos": {
         "h": 5,
         "w": 8,
         "x": 8,
-        "y": 17
+        "y": 13
       },
       "transparent": true,
       "options": {
@@ -2001,14 +1985,14 @@
       }
     },
     {
-      "id": 11,
+      "id": 10,
       "type": "text",
       "title": "\u7f51\u7edc\u6458\u8981",
       "gridPos": {
         "h": 5,
         "w": 8,
         "x": 16,
-        "y": 17
+        "y": 13
       },
       "transparent": true,
       "options": {
@@ -2017,7 +2001,7 @@
       }
     },
     {
-      "id": 12,
+      "id": 11,
       "type": "dashlist",
       "title": "\u8ba1\u7b97\u76ee\u5f55",
       "pluginVersion": "12.3.0",
@@ -2025,7 +2009,7 @@
         "h": 9,
         "w": 8,
         "x": 0,
-        "y": 22
+        "y": 18
       },
       "options": {
         "includeVars": true,
@@ -2043,7 +2027,7 @@
       }
     },
     {
-      "id": 13,
+      "id": 12,
       "type": "dashlist",
       "title": "\u5b58\u50a8\u76ee\u5f55",
       "pluginVersion": "12.3.0",
@@ -2051,7 +2035,7 @@
         "h": 9,
         "w": 8,
         "x": 8,
-        "y": 22
+        "y": 18
       },
       "options": {
         "includeVars": true,
@@ -2069,7 +2053,7 @@
       }
     },
     {
-      "id": 14,
+      "id": 13,
       "type": "dashlist",
       "title": "\u7f51\u7edc\u76ee\u5f55",
       "pluginVersion": "12.3.0",
@@ -2077,7 +2061,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 22
+        "y": 18
       },
       "options": {
         "includeVars": true,
@@ -2095,7 +2079,7 @@
       }
     },
     {
-      "id": 15,
+      "id": 14,
       "type": "row",
       "title": "PaaS\u670d\u52a1",
       "collapsed": false,
@@ -2104,18 +2088,18 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 27
       }
     },
     {
-      "id": 16,
+      "id": 15,
       "type": "text",
       "title": "\u5e73\u53f0\u63a7\u5236\u9762\u6458\u8981",
       "gridPos": {
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 32
+        "y": 28
       },
       "transparent": true,
       "options": {
@@ -2124,14 +2108,14 @@
       }
     },
     {
-      "id": 17,
+      "id": 16,
       "type": "text",
       "title": "\u96c6\u7fa4\u6458\u8981",
       "gridPos": {
         "h": 5,
         "w": 6,
         "x": 6,
-        "y": 32
+        "y": 28
       },
       "transparent": true,
       "options": {
@@ -2140,14 +2124,14 @@
       }
     },
     {
-      "id": 18,
+      "id": 17,
       "type": "text",
       "title": "DB\u6458\u8981",
       "gridPos": {
         "h": 5,
         "w": 6,
         "x": 12,
-        "y": 32
+        "y": 28
       },
       "transparent": true,
       "options": {
@@ -2156,14 +2140,14 @@
       }
     },
     {
-      "id": 19,
+      "id": 18,
       "type": "text",
       "title": "\u7f13\u5b58\u6458\u8981",
       "gridPos": {
         "h": 5,
         "w": 6,
         "x": 18,
-        "y": 32
+        "y": 28
       },
       "transparent": true,
       "options": {
@@ -2172,7 +2156,7 @@
       }
     },
     {
-      "id": 20,
+      "id": 19,
       "type": "dashlist",
       "title": "\u5e73\u53f0\u63a7\u5236\u9762\u76ee\u5f55",
       "pluginVersion": "12.3.0",
@@ -2180,7 +2164,7 @@
         "h": 10,
         "w": 6,
         "x": 0,
-        "y": 37
+        "y": 33
       },
       "options": {
         "includeVars": true,
@@ -2198,7 +2182,7 @@
       }
     },
     {
-      "id": 21,
+      "id": 20,
       "type": "dashlist",
       "title": "\u96c6\u7fa4\u76ee\u5f55",
       "pluginVersion": "12.3.0",
@@ -2206,7 +2190,7 @@
         "h": 8,
         "w": 6,
         "x": 6,
-        "y": 37
+        "y": 33
       },
       "options": {
         "includeVars": true,
@@ -2224,7 +2208,7 @@
       }
     },
     {
-      "id": 22,
+      "id": 21,
       "type": "dashlist",
       "title": "DB\u76ee\u5f55",
       "pluginVersion": "12.3.0",
@@ -2232,7 +2216,7 @@
         "h": 14,
         "w": 6,
         "x": 12,
-        "y": 37
+        "y": 33
       },
       "options": {
         "includeVars": true,
@@ -2250,7 +2234,7 @@
       }
     },
     {
-      "id": 23,
+      "id": 22,
       "type": "dashlist",
       "title": "\u7f13\u5b58\u76ee\u5f55",
       "pluginVersion": "12.3.0",
@@ -2258,7 +2242,7 @@
         "h": 9,
         "w": 6,
         "x": 18,
-        "y": 37
+        "y": 33
       },
       "options": {
         "includeVars": true,
@@ -2276,27 +2260,27 @@
       }
     },
     {
-      "id": 24,
+      "id": 23,
       "type": "row",
-      "title": "\u4e1a\u52a1\u5355\u5143",
+      "title": "\u4e1a\u52a1\u76d1\u63a7",
       "collapsed": false,
       "panels": [],
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 51
+        "y": 47
       }
     },
     {
-      "id": 25,
+      "id": 24,
       "type": "text",
       "title": "\u4ee3\u7406\u6458\u8981",
       "gridPos": {
         "h": 5,
         "w": 12,
         "x": 0,
-        "y": 52
+        "y": 48
       },
       "transparent": true,
       "options": {
@@ -2305,14 +2289,14 @@
       }
     },
     {
-      "id": 26,
+      "id": 25,
       "type": "text",
       "title": "\u8bf7\u6c42\u6458\u8981",
       "gridPos": {
         "h": 5,
         "w": 12,
         "x": 12,
-        "y": 52
+        "y": 48
       },
       "transparent": true,
       "options": {
@@ -2321,7 +2305,7 @@
       }
     },
     {
-      "id": 27,
+      "id": 26,
       "type": "dashlist",
       "title": "\u4ee3\u7406\u76ee\u5f55",
       "pluginVersion": "12.3.0",
@@ -2329,7 +2313,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 57
+        "y": 53
       },
       "options": {
         "includeVars": true,
@@ -2347,7 +2331,7 @@
       }
     },
     {
-      "id": 28,
+      "id": 27,
       "type": "dashlist",
       "title": "\u8bf7\u6c42\u76ee\u5f55",
       "pluginVersion": "12.3.0",
@@ -2355,7 +2339,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 57
+        "y": 53
       },
       "options": {
         "includeVars": true,
