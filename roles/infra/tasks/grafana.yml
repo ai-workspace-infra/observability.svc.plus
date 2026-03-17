@@ -90,12 +90,36 @@
   when: grafana_enabled|bool
   block:
 
-    # sync files/grafana @ local -> /etc/dashboards @ infra
+    - name: remove legacy grafana dashboard directories
+      tags: dashboard_sync
+      file: path={{ item }} state=absent
+      with_items:
+        - /etc/dashboards/app
+        - /etc/dashboards/infra
+        - /etc/dashboards/minio
+        - /etc/dashboards/mongo
+        - /etc/dashboards/node
+        - /etc/dashboards/pgsql
+        - /etc/dashboards/redis
+        - /etc/dashboards/__pycache__
+        - /infra/dashboards/app
+        - /infra/dashboards/infra
+        - /infra/dashboards/minio
+        - /infra/dashboards/mongo
+        - /infra/dashboards/node
+        - /infra/dashboards/pgsql
+        - /infra/dashboards/redis
+        - /infra/dashboards/__pycache__
+
+    # sync files/grafana @ local -> /etc/dashboards + /infra/dashboards
     - name: sync grafana dashboards
       tags: dashboard_sync
-      copy: src=grafana/ dest=/infra/dashboards/
+      copy: src=grafana/ dest={{ item }}
+      with_items:
+        - /etc/dashboards/
+        - /infra/dashboards/
 
-    - name: provisioning grafana with grafana.py
+    - name: provision root dashboards with grafana.py
       when: inventory_hostname in groups["infra"]|default([])
       throttle: "{% if grafana_pgurl != '' %}1{% else %}5{% endif %}"
       tags: dashboard_init
@@ -109,8 +133,11 @@
         export GRAFANA_ENDPOINT={{ endpoint }}
         export GRAFANA_USERNAME={{ username }}
         export GRAFANA_PASSWORD={{ password }}
+        export GRAFANA_CREATE_FOLDERS=false
+        export GRAFANA_SKIP_SUBFOLDERS=true
 
-        # run provisioning logic
+        # keep API provisioning only for root dashboards such as homepage;
+        # folder dashboards are provisioned by Grafana file providers.
         cd /infra/dashboards/
         chown -R root:root /infra/dashboards/
         /bin/python3 /infra/dashboards/grafana.py init /infra/dashboards/

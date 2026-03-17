@@ -12,12 +12,102 @@
 apiVersion: 1
 providers:
 
-  - name: Pigsty
+  - name: IAAS Compute
     orgId: 1
     type: file
     updateIntervalSeconds: 8
+    disableDeletion: false
     allowUiUpdates: true
+    folder: IAAS / 计算
+    folderUid: 01-iaas-compute
     options:
-      path: /etc/dashboards/
-      foldersFromFilesStructure: true
+      path: /etc/dashboards/01-iaas-compute
+
+  - name: IAAS Storage
+    orgId: 1
+    type: file
+    updateIntervalSeconds: 8
+    disableDeletion: false
+    allowUiUpdates: true
+    folder: IAAS / 存储
+    folderUid: 02-iaas-storage
+    options:
+      path: /etc/dashboards/02-iaas-storage
+
+  - name: IAAS Network
+    orgId: 1
+    type: file
+    updateIntervalSeconds: 8
+    disableDeletion: false
+    allowUiUpdates: true
+    folder: IAAS / 网络
+    folderUid: 03-iaas-network
+    options:
+      path: /etc/dashboards/03-iaas-network
+
+  - name: PAAS Control Plane
+    orgId: 1
+    type: file
+    updateIntervalSeconds: 8
+    disableDeletion: false
+    allowUiUpdates: true
+    folder: PaaS / 平台控制面
+    folderUid: 11-paas-control-plane
+    options:
+      path: /etc/dashboards/11-paas-control-plane
+
+  - name: PAAS Cluster
+    orgId: 1
+    type: file
+    updateIntervalSeconds: 8
+    disableDeletion: false
+    allowUiUpdates: true
+    folder: PaaS / 集群
+    folderUid: 12-paas-cluster
+    options:
+      path: /etc/dashboards/12-paas-cluster
+
+  - name: PAAS DB
+    orgId: 1
+    type: file
+    updateIntervalSeconds: 8
+    disableDeletion: false
+    allowUiUpdates: true
+    folder: PaaS / DB
+    folderUid: 13-paas-db
+    options:
+      path: /etc/dashboards/13-paas-db
+
+  - name: PAAS Cache
+    orgId: 1
+    type: file
+    updateIntervalSeconds: 8
+    disableDeletion: false
+    allowUiUpdates: true
+    folder: PaaS / 缓存
+    folderUid: 14-paas-cache
+    options:
+      path: /etc/dashboards/14-paas-cache
+
+  - name: BU Proxy
+    orgId: 1
+    type: file
+    updateIntervalSeconds: 8
+    disableDeletion: false
+    allowUiUpdates: true
+    folder: 业务单元 / 代理
+    folderUid: 22-bu-proxy
+    options:
+      path: /etc/dashboards/22-bu-proxy
+
+  - name: BU Request
+    orgId: 1
+    type: file
+    updateIntervalSeconds: 8
+    disableDeletion: false
+    allowUiUpdates: true
+    folder: 业务单元 / 请求
+    folderUid: 24-bu-request
+    options:
+      path: /etc/dashboards/24-bu-request
 ...

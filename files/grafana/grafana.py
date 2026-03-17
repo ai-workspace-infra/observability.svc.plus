@@ -10,11 +10,19 @@
 #==============================================================#
 import os, sys, json, requests
 
+
+def env_flag(name, default):
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.lower() in ('1', 'true', 'yes', 'on')
+
 # grafana access info
 ENDPOINT = os.environ.get("GRAFANA_ENDPOINT", 'http://i.pigsty/ui')
 USERNAME = os.environ.get("GRAFANA_USERNAME", 'admin')
 PASSWORD = os.environ.get("GRAFANA_PASSWORD", 'pigsty')
-CREATE_FOLDERS = True
+CREATE_FOLDERS = env_flag('GRAFANA_CREATE_FOLDERS', True)
+SKIP_SUBFOLDERS = env_flag('GRAFANA_SKIP_SUBFOLDERS', False)
 
 FOLDER_TITLES = {
     '01-iaas-compute': 'IAAS / 计算',
@@ -327,7 +335,7 @@ def init_all(dashboard_dir):
         if os.path.isfile(abs_path) and f.endswith('.json')  and not f.startswith('.'):
             print("init dashboard : %s" % f)
             add_dashboard(load_dashboard(abs_path, True))
-        if os.path.isdir(abs_path):
+        if os.path.isdir(abs_path) and not SKIP_SUBFOLDERS:
             folders.append((f, abs_path))  # folder name, abs path
 
     home_uid = "home"
@@ -356,7 +364,7 @@ def load_all(dashboard_dir):
         if os.path.isfile(abs_path) and f.endswith('.json') and not f.startswith('.'):
             print("load dashboard : %s" % f)
             add_dashboard(load_dashboard(abs_path))
-        if os.path.isdir(abs_path):
+        if os.path.isdir(abs_path) and not SKIP_SUBFOLDERS:
             folders.append((f, abs_path))  # folder name, abs path
 
     for folder_name, folder_path in folders:
