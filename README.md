@@ -98,7 +98,7 @@ ansible-playbook -i <your-inventory> node.yml \
 ### Server side
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/cloud-neutral-toolkit/observability.svc.plus/main/scripts/server-install.sh?$(date +%s)" | bash -s -- observability.svc.plus
+curl -fsSL "https://raw.githubusercontent.com/cloud-neutral-toolkit/observability.svc.plus/main/scripts/setup-observability-all-in-one.sh?$(date +%s)" | bash -s -- observability.svc.plus
 ```
 
 ### Client side (agent)

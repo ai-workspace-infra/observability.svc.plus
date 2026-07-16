@@ -1,6 +1,6 @@
 #!/bin/bash
 #==============================================================#
-# File      : server-install.sh
+# File      : setup-observability-all-in-one.sh
 # Mtime     : 2026-02-03
 # Desc      : observability.svc.plus lifecycle installer
 # Usage     : curl ... | bash -s -- [options] [VERSION] [DOMAIN]
@@ -113,8 +113,8 @@ domain_points_to_local_host() {
 usage() {
     cat <<EOF
 Usage:
-  bash server-install.sh [options] [VERSION] [DOMAIN]
-  bash server-install.sh [options] [DOMAIN]
+  bash setup-observability-all-in-one.sh [options] [VERSION] [DOMAIN]
+  bash setup-observability-all-in-one.sh [options] [DOMAIN]
 
 Actions (default: deploy):
   --action deploy     Deploy or upgrade in place (idempotent)
@@ -129,9 +129,9 @@ Options:
   -h, --help          Show help
 
 Examples:
-  curl -fsSL ".../server-install.sh" | bash -s -- observability.svc.plus
-  curl -fsSL ".../server-install.sh" | bash -s -- --action upgrade observability.svc.plus
-  curl -fsSL ".../server-install.sh" | bash -s -- --action reset -y observability.svc.plus
+  curl -fsSL ".../setup-observability-all-in-one.sh" | bash -s -- observability.svc.plus
+  curl -fsSL ".../setup-observability-all-in-one.sh" | bash -s -- --action upgrade observability.svc.plus
+  curl -fsSL ".../setup-observability-all-in-one.sh" | bash -s -- --action reset -y observability.svc.plus
 
 Notes:
   DOMAIN is the public ingress domain. The current machine may still be named
@@ -279,7 +279,7 @@ configure_ingest_gateway() {
     if [[ -f "${home_conf}" ]]; then
         log_info "Configuring HTTPS ingest routes in nginx..."
         cat > "${ingest_inc}" <<'EOF'
-# managed by scripts/server-install.sh
+# managed by scripts/setup-observability-all-in-one.sh
 location = /ingest/metrics/api/v1/write {
     proxy_pass http://127.0.0.1:8428/api/v1/write;
     proxy_set_header Host $http_host;
